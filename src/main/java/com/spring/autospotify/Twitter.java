@@ -6,11 +6,19 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
+import java.io.IOException;
+import java.util.Properties;
+
 public class Twitter {
-
     private final twitter4j.Twitter twitter;
+    GetPropertyValues properties = new GetPropertyValues();
+    Properties prop = properties.getPropValues();
+    String consumerKey = prop.getProperty("consumerKey");
+    String consumerSecret = prop.getProperty("consumerSecret");
+    String accessToken = prop.getProperty("accessToken");
+    String accessTokenSecret = prop.getProperty("accessTokenSecret");
 
-    public Twitter(String consumerKey, String consumerSecret, String accessToken, String accessTokenSecret) {
+    public Twitter() throws IOException {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(false)
                 .setOAuthConsumerKey(consumerKey)
