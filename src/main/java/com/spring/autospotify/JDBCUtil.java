@@ -29,12 +29,18 @@ public class JDBCUtil {
         ps1.executeUpdate();
     }
 
-
-
-    public String selectArtist(String originalArtist) throws SQLException {
-        String sql = "SELECT Artist,SpotifyID FROM ARTIST Where Artist = ?";
+    public void insertArtist(String artist, String spotifyID) throws SQLException {
+        String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
-        ps.setString(1, originalArtist);
+        ps.setString(1, artist);
+        ps.setString(2, spotifyID);
+        ps.executeUpdate();
+    }
+
+    public String getSpotifyID(String parsedArtist) throws SQLException {
+        String sql = "SELECT SpotifyID FROM ARTIST Where UPPER(ARTIST) = ?";
+        PreparedStatement ps = db.prepareStatement(sql);
+        ps.setString(1, parsedArtist);
         ResultSet result = ps.executeQuery();
         String spotifyId = "";
         while (result.next()) {

@@ -22,6 +22,7 @@ public class Spotify {
     String spotifyClientId = prop.getProperty("spotifyClientId");
     String spotifyClientSecret = prop.getProperty("spotifyClientSecret");
     JDBCUtil db = new JDBCUtil();
+
     public Spotify() throws IOException, SQLException {
         SpotifyApi spotifyApi = new SpotifyApi.Builder()
                 .setClientId(spotifyClientId)
@@ -31,7 +32,7 @@ public class Spotify {
     }
 
     public SpotifyApi setToken() throws ParseException, SpotifyWebApiException, IOException {
-        if(spotifyApi.getAccessToken().length() <= 0 || spotifyApi.getAccessToken() == null) {
+        if (spotifyApi.getAccessToken().length() <= 0 || spotifyApi.getAccessToken() == null) {
             ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
             ClientCredentials clientCredentials = clientCredentialsRequest.execute();
             spotifyApi.setAccessToken(clientCredentials.getAccessToken());
@@ -43,10 +44,10 @@ public class Spotify {
     public String[] searchArtist(String originalArtist, String parsedArtist) throws ParseException, SpotifyWebApiException, IOException, SQLException {
         String oArtist = originalArtist.toUpperCase();
         String pArtist = parsedArtist.toUpperCase();
-        String spotifyId = db.selectArtist(oArtist);
-        if(spotifyId.length() > 0){
+        String spotifyId = db.getSpotifyID(pArtist);
+        if (spotifyId.length() > 0) {
             System.out.println("We found the artist in the database: " + originalArtist);
-            return new String[]{originalArtist,spotifyId};
+            return new String[]{originalArtist, spotifyId};
         }
         this.spotifyApi = setToken();
         SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(parsedArtist).limit(50).build();
@@ -60,9 +61,14 @@ public class Spotify {
             Artist[] artists = artistPaging.getItems();
             for (int x = 0; x < total; x++) {
                 String spotifyName = artists[x].getName().toUpperCase();
+                String id = artists[x].getId();
                 if (oArtist.equals(spotifyName) || pArtist.equals(spotifyName)) {
+                    if (oArtist.equals(spotifyName))
+                        db.insertArtist(oArtist, id);
+                    else
+                        db.insertArtist(pArtist,id );
                     System.out.println("We found the artist: " + spotifyName);
-                    return new String[]{artists[x].getId(), artists[x].getName()};
+                    return new String[]{artists[x].getName(),id};
                 }
             }
         } catch (IOException | SpotifyWebApiException | ParseException e) {
