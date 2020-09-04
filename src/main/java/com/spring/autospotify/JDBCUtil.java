@@ -1,6 +1,7 @@
 package com.spring.autospotify;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class JDBCUtil {
     private final String url;
@@ -47,6 +48,17 @@ public class JDBCUtil {
             spotifyId = result.getString("SpotifyID");
         }
         return spotifyId;
+    }
+    public void insertUriTweet(ArrayList<String> spotifyUriList, String tweet) throws SQLException{
+        String sql = "INSERT INTO TWEET_TRACK (TweetId,SpotifyURI) VALUES (?,?)";
+        PreparedStatement ps = db.prepareStatement(sql);
+        for(int x = 0; x < spotifyUriList.size(); x++) {
+            ps.setString(1,tweet);
+            ps.setString(2, spotifyUriList.get(x));
+            ps.addBatch();
+        }
+        ps.executeBatch();
+        System.out.println("Successfully added songs to db");
     }
 
 

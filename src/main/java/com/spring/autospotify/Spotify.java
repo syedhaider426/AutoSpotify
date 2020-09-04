@@ -18,8 +18,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
 
 
@@ -100,6 +98,7 @@ public class Spotify {
                 LocalDateTime releaseDate = LocalDateTime.parse(items[x].getReleaseDate(),format);
                 long d1 = Duration.between(current,releaseDate).toDays();
                 if(d1 <= 28){
+                    System.out.println("We found the track/album" + items[x].getName());
                     spotifyIdList.add(items[x].getUri());
                 }
             }
@@ -110,7 +109,7 @@ public class Spotify {
         return null;
     }
 
-    
+
 
 
 }
