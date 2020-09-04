@@ -14,12 +14,14 @@ public class JDBCUtil {
         this.db = null;
     }
 
+    // Initialize database connection
     public void init() throws ClassNotFoundException, SQLException {
         Class.forName(driver);
         Connection conn = DriverManager.getConnection(url, "postgres", "9");
         this.db = conn;
     }
 
+    // Create Artist Table
     public void createArtistTable() throws SQLException {
         String sql1 = "CREATE TABLE IF NOT EXISTS ARTIST" +
                 "(" +
@@ -30,6 +32,7 @@ public class JDBCUtil {
         ps1.executeUpdate();
     }
 
+    // Insert Artist into Artist table
     public void insertArtist(String artist, String spotifyID) throws SQLException {
         String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
@@ -38,6 +41,7 @@ public class JDBCUtil {
         ps.executeUpdate();
     }
 
+    // Get spotify id of an artist
     public String getSpotifyID(String parsedArtist) throws SQLException {
         String sql = "SELECT SpotifyID FROM ARTIST Where UPPER(ARTIST) = ?";
         PreparedStatement ps = db.prepareStatement(sql);
@@ -49,8 +53,10 @@ public class JDBCUtil {
         }
         return spotifyId;
     }
+
+    // Insert track/album uri and tweet into tweet_track
     public void insertUriTweet(ArrayList<String> spotifyUriList, String tweet) throws SQLException{
-        String sql = "INSERT INTO TWEET_TRACK (TweetId,SpotifyURI) VALUES (?,?)";
+        String sql = "INSERT INTO TWEET_URI (TweetId,SpotifyURI) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
         for(int x = 0; x < spotifyUriList.size(); x++) {
             ps.setString(1,tweet);

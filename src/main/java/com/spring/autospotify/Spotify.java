@@ -3,11 +3,15 @@ package com.spring.autospotify;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.ClientCredentials;
+import com.wrapper.spotify.model_objects.special.SnapshotResult;
 import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.Artist;
 import com.wrapper.spotify.model_objects.specification.Paging;
+import com.wrapper.spotify.model_objects.specification.Playlist;
 import com.wrapper.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import com.wrapper.spotify.requests.data.artists.GetArtistsAlbumsRequest;
+import com.wrapper.spotify.requests.data.playlists.AddItemsToPlaylistRequest;
+import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchArtistsRequest;
 import org.apache.hc.core5.http.ParseException;
 
@@ -107,6 +111,30 @@ public class Spotify {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String createPlaylist(String userId, String name){
+        CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(userId,name).build();
+        try{
+            Playlist playlist = createPlaylistRequest.execute();
+            return playlist.getId();
+        } catch (ParseException | IOException | SpotifyWebApiException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Boolean addSongsToPlaylist(String playlistId, ArrayList<String> uris){
+        String[] uriArray = uris.toArray(new String[0]);
+        AddItemsToPlaylistRequest addItemsToPlaylistRequest = spotifyApi.addItemsToPlaylist(playlistId,uriArray).build()
+        try {
+            final SnapshotResult snapshotResult = addItemsToPlaylistRequest.execute();
+            System.out.println("Snapshot ID: " + snapshotResult.getSnapshotId());
+            return true;
+        }catch(SpotifyWebApiException | ParseException | IOException e){
+            e.printStackTrace();
+        }
+        return false;
     }
 
 
