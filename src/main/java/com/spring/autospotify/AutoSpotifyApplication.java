@@ -18,7 +18,14 @@ public class AutoSpotifyApplication {
         JDBCUtil db = new JDBCUtil();
         db.init();
         Spotify spotify = new Spotify();
-        spotify.searchArtist("Bonnie X Clyde","Bonnie");
+        String[] artistInfo = spotify.searchArtist("Bonnie X Clyde","Bonnie");
+        String artist;
+        String spotifyId;
+        if(artistInfo.length > 0) {
+            artist = artistInfo[0];
+            spotifyId = artistInfo[1];
+        }
+
     }
 
 }

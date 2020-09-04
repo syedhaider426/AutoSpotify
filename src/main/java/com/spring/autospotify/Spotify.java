@@ -3,15 +3,23 @@ package com.spring.autospotify;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.ClientCredentials;
+import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.Artist;
 import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
+import com.wrapper.spotify.requests.data.artists.GetArtistsAlbumsRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchArtistsRequest;
 import org.apache.hc.core5.http.ParseException;
 
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 
 
@@ -76,6 +84,33 @@ public class Spotify {
         }
         return null;
     }
+
+    public ArrayList<String> getNewReleases(String spotifyId){
+        GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(spotifyId)
+                .build();
+        try{
+            final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
+            ArrayList<String> spotifyIdList = new ArrayList<>();
+            System.out.println("Total: " + albums.getTotal());
+            AlbumSimplified[] items = albums.getItems();
+            int total = albums.getTotal();
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime current = LocalDateTime.now();
+            for(int x = 0; x < total; x++){
+                LocalDateTime releaseDate = LocalDateTime.parse(items[x].getReleaseDate(),format);
+                long d1 = Duration.between(current,releaseDate).toDays();
+                if(d1 <= 28){
+                    spotifyIdList.add(items[x].getUri());
+                }
+            }
+            return spotifyIdList;
+        }catch(IOException | SpotifyWebApiException | ParseException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    
 
 
 }
