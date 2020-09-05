@@ -27,9 +27,7 @@ public class AutoSpotifyApplication {
 
         ArrayList<String> artistList = new ArrayList<>();
         Map<String,String> artists = new HashMap<>();
-        artists.put("MightNight Tyrannousaurus","MightNight Tyrannousaurus");
-//        artists.put("Exciasion","Exciasion");
-//        artists.put("Virthual Riot","Virtuahl Riot");
+        artists.put("Moody Good","Moody Good");
 
         // Search for each artist in db or spotify api
         ArrayList<String> artistIdList = spotify.searchArtist(artists);
@@ -43,7 +41,6 @@ public class AutoSpotifyApplication {
             System.out.println("No new releases found");
             return;
         }
-
         // Get each track to be added to Spotify
         ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
         if(artistIdList.size() <= 0){

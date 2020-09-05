@@ -19,9 +19,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 
 public class Spotify {
@@ -129,15 +127,21 @@ public class Spotify {
 
     public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases){
         ArrayList<String> releases = new ArrayList<>();
+        Map<String,String> releasesMap = new HashMap<>();
         try{
             for(int x = 0; x < albumReleases.size(); x++) {
                 GetAlbumsTracksRequest getAlbumsTracksRequest = spotifyApi.getAlbumsTracks(albumReleases.get(x)).build();
                 Paging<TrackSimplified> trackSimplifiedPaging = getAlbumsTracksRequest.execute();
                 TrackSimplified[] items = trackSimplifiedPaging.getItems();
                 for(int y = 0; y < items.length; y++){
-                    releases.add(items[y].getUri());
+                    releasesMap.put(items[y].getName(),items[y].getUri());
                 }
             }
+            // Duplicates removed
+            for(Map.Entry<String,String> entry: releasesMap.entrySet()){
+                releases.add(entry.getValue());
+            }
+            // return the list
             return releases;
         }
         catch(ParseException | SpotifyWebApiException | IOException e){
@@ -179,8 +183,6 @@ public class Spotify {
         }
         return false;
     }
-
-
 
 
 }
