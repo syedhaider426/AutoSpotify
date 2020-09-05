@@ -13,14 +13,15 @@ import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchArtistsRequest;
 import org.apache.hc.core5.http.ParseException;
 
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
 
 
 public class Spotify {
@@ -67,6 +68,7 @@ public class Spotify {
                 break;
             }
             this.spotifyApi = setToken();
+            System.out.println("Checking artist: " + originalArtist);
             SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(pArtist).limit(50).build();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();
@@ -83,10 +85,13 @@ public class Spotify {
                             db.insertArtist(oArtist, id);
                         else
                             db.insertArtist(pArtist, id);
-                        System.out.println("We found the artist: " + spotifyName);
+                        System.out.println("We found the artist in the api: " + spotifyName);
                         artists.add(id);
+                        break;
                     }
                 }
+
+                System.out.println("No artist found with name: " + parsedArtist);
             } catch (IOException | SpotifyWebApiException | ParseException e) {
                 e.printStackTrace();
             }
@@ -94,31 +99,32 @@ public class Spotify {
         return artists;
     }
 
-    public ArrayList<String> getNewReleases(String spotifyId) throws ParseException, SpotifyWebApiException, IOException {
+    public ArrayList<String> getNewReleases(ArrayList<String> artistIdList) throws ParseException, SpotifyWebApiException, IOException {
         this.spotifyApi = setToken();
-        GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(spotifyId)
-                .build();
-        try{
-            final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
-            ArrayList<String> spotifyIdList = new ArrayList<>();
-            AlbumSimplified[] items = albums.getItems();
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime current = LocalDate.now().atStartOfDay();
-            for(int x = 0; x < items.length; x++){
-                LocalDateTime releaseDate = LocalDate.parse(items[x].getReleaseDate(),format).atStartOfDay();
-                long d1 = Duration.between(releaseDate,current).toDays();
-                if(d1 <= 28){
-                    System.out.println(items[x].getReleaseDate());
-                    System.out.println("We found the " + items[x].getAlbumType() +
-                            ": " + items[x].getName());
-                    spotifyIdList.add(items[x].getId());
-                                    }
+        ArrayList<String> spotifyIdList = new ArrayList<>();
+        for(int x = 0; x < artistIdList.size(); x++) {
+            GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
+                    .build();
+            try {
+                final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
+                AlbumSimplified[] items = albums.getItems();
+                DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDateTime current = LocalDate.now().atStartOfDay();
+                for (int y = 0; y < items.length; y++) {
+                    LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
+                    long d1 = Duration.between(releaseDate, current).toDays();
+                    if (d1 <= 28) {
+                        System.out.println(items[y].getReleaseDate());
+                        System.out.println("We found the " + items[y].getAlbumType() +
+                                ": " + items[y].getName());
+                        spotifyIdList.add(items[y].getId());
+                    }
+                }
+            } catch (IOException | SpotifyWebApiException | ParseException e) {
+                e.printStackTrace();
             }
-            return spotifyIdList;
-        }catch(IOException | SpotifyWebApiException | ParseException e){
-            e.printStackTrace();
         }
-        return null;
+        return spotifyIdList;
     }
 
     public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases){
@@ -145,7 +151,7 @@ public class Spotify {
         return spotifyApi;
     }
 
-    public String createPlaylist(String userId, String name) throws ParseException, SpotifyWebApiException, IOException {
+    public String createPlaylist(String userId, String name)  {
         this.spotifyApi = getOAuthAccessToken();
         CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(userId,name).build();
         try{

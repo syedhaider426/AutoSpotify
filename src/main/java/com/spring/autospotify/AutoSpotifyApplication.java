@@ -9,10 +9,6 @@ import twitter4j.TwitterException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +16,7 @@ import java.util.Map;
 //@SpringBootApplication
 public class AutoSpotifyApplication {
 
-    public static void main(String[] args) throws TwitterException, SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException {
         String tweetid = "1234";
         // Initialize the database
         JDBCUtil db = new JDBCUtil();
@@ -31,23 +27,29 @@ public class AutoSpotifyApplication {
 
         ArrayList<String> artistList = new ArrayList<>();
         Map<String,String> artists = new HashMap<>();
-        artists.put("Excision","Excision");
-        artists.put("Virthual Riot","Virtuahl Riot");
-        artists.put("Kompany","Kompany");
+        artists.put("MightNight Tyrannousaurus","MightNight Tyrannousaurus");
+//        artists.put("Exciasion","Exciasion");
+//        artists.put("Virthual Riot","Virtuahl Riot");
 
-        // Search for maps
+        // Search for each artist in db or spotify api
         ArrayList<String> artistIdList = spotify.searchArtist(artists);
+        if(artistIdList.size() <= 0){
+            System.out.println("No artists found");
+            return;
+        }
+        // Get new releases
+        ArrayList<String> albumReleases = spotify.getNewReleases(artistIdList);
+        if(artistIdList.size() <= 0){
+            System.out.println("No new releases found");
+            return;
+        }
 
-        ArrayList<String> albumReleases = new ArrayList<>();
-        // Get new releases for the artist
-        for (int x = 0; x < artistIdList.size(); x++) {
-            ArrayList<String> artistReleases = spotify.getNewReleases(artistIdList.get(x));
-            albumReleases.addAll(artistReleases);
-        }
-        for(int x = 0; x < albumReleases.size(); x++){
-            System.out.println("Album Release" + albumReleases.get(x));
-        }
+        // Get each track to be added to Spotify
         ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
+        if(artistIdList.size() <= 0){
+            System.out.println("Tracks for the requests albums were not found");
+            return;
+        }
 
         // Store list of new tracks and the tweet they are related to
         db.insertUriTweet(releases,tweetid);
