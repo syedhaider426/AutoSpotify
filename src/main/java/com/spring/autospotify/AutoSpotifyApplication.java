@@ -28,16 +28,15 @@ public class AutoSpotifyApplication {
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
-        Long tweetid = 1255950588476624896L;
+        Long tweetid = 1222957785454759936L;
         Twitter twitter = new Twitter();
-        String[] artistList = twitter.getStatusText(tweetid);
-        LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
-        Map<String,String> artists = new HashMap<>();
-        if(artists.size() <= 0){
+        // Gets tweet and parses it
+        Map<String, String> artists = twitter.getArtists(tweetid);
+        if (artists.size() < 6) {
             System.out.println("No artists found");
             return;
         }
-
+/*
         // Search for each artist in db or spotify api
         ArrayList<String> artistIdList = spotify.searchArtist(artists);
         if(artistIdList.size() <= 0){
@@ -45,6 +44,7 @@ public class AutoSpotifyApplication {
             return;
         }
         // Get releases based of the tweet date
+        LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
         ArrayList<String> albumReleases = spotify.getReleases(artistIdList,tweetDate);
         if(artistIdList.size() <= 0){
             System.out.println("No new releases found");
@@ -70,6 +70,8 @@ public class AutoSpotifyApplication {
             return;
         }
         // Send user to playlist
+*/
+
     }
 
 }

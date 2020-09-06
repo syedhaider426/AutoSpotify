@@ -10,44 +10,53 @@ import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Properties;
+import java.util.*;
 
 public class Twitter {
     private final twitter4j.Twitter twitter;
     GetPropertyValues properties = new GetPropertyValues();
     Properties prop = properties.getPropValues();
-    String consumerKey = prop.getProperty("consumerKey");
-    String consumerSecret = prop.getProperty("consumerSecret");
-    String accessToken = prop.getProperty("accessToken");
-    String accessTokenSecret = prop.getProperty("accessTokenSecret");
-
     public Twitter() throws IOException {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(false)
-                .setOAuthConsumerKey(consumerKey)
-                .setOAuthConsumerSecret(consumerSecret)
-                .setOAuthAccessToken(accessToken)
-                .setOAuthAccessTokenSecret(accessTokenSecret);
+                .setOAuthConsumerKey(prop.getProperty("consumerKey"))
+                .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
+                .setOAuthAccessToken(prop.getProperty("accessToken"))
+                .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
         TwitterFactory tf = new TwitterFactory(cb.build());
         twitter4j.Twitter twitter = tf.getInstance();
         this.twitter = twitter;
     }
 
-    public void createTweet(String tweet) throws TwitterException {
-        Status status = twitter.updateStatus(tweet);
-        System.out.println("Succesfully updated the status to [" + status.getText());
-    }
-    public void replyTweet(String tweet, Long replyId) throws TwitterException{
-        StatusUpdate statusUpdate = new StatusUpdate(tweet);
-        statusUpdate.setInReplyToStatusId(replyId);
-        Status status = twitter.updateStatus(statusUpdate);
-        System.out.println("Replied to " + replyId);
-    }
 
-    public String[] getStatusText(long tweetid) throws TwitterException {
+    public Map<String,String> getArtists(long tweetid) throws TwitterException {
         String status = twitter.showStatus(tweetid).getText().toString();
+        String[] artists = status.split("\n");
+        String[] tempArtists;
+        Map<String,String> artistMap = new HashMap<>();
+        for (int x = 2; x < artists.length; x++) {
+            tempArtists = null;
+            String artist = artists[x].toUpperCase();
+            if (artist.contains("+")) {
+                tempArtists = artist.split("\\+");
+                for(int y = 0; y < tempArtists.length; y++){
+                    artistMap.put(tempArtists[y],tempArtists[y]);
+                }
+            }
+            else if (artist.contains(" X ")) {
+                tempArtists = artist.split(" X ");
+                for(int y = 0; y < tempArtists.length; y++){
+                    artistMap.put(artist,tempArtists[y]);
+                }
+            }
+            else if(artist.length() > 1){
+                System.out.println("Added " + artist + " to map");
+                artistMap.put(artist, artist);
+            }
+        }
         // When parsing, need to start from index of 2
-        return status.split("\n");
+
+        return artistMap;
     }
 
     public LocalDateTime getStatusDate(long tweetid) throws TwitterException {
@@ -56,8 +65,6 @@ public class Twitter {
         LocalDateTime statusDate = new Date(date).toLocalDate().atStartOfDay();
         return statusDate;
     }
-
-
 
 
 }

@@ -55,7 +55,7 @@ public class JDBCUtil {
 
     public void createUriTweetTable() throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS TWEET_URI (" +
-                "TweetId TEXT PRIMARY KEY," +
+                "TweetId BIGINT PRIMARY KEY," +
                 "SpotifyURI TEXT NOT NULL)";
         PreparedStatement ps1 = db.prepareStatement(sql);
         ps1.executeUpdate();
@@ -67,7 +67,7 @@ public class JDBCUtil {
         String sql = "INSERT INTO TWEET_URI (TweetId,SpotifyURI) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
         for(int x = 0; x < spotifyUriList.size(); x++) {
-            ps.setString(1,tweet);
+            ps.setLong(1,tweet);
             ps.setString(2, spotifyUriList.get(x));
             ps.addBatch();
         }

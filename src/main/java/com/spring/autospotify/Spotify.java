@@ -51,23 +51,22 @@ public class Spotify {
         return spotifyApi;
     }
 
+
     // Search artist will do an api call, verify the artist exists in Spotify, and return spotifyid back
     public ArrayList<String> searchArtist(Map<String,String> artistMap) throws ParseException, SpotifyWebApiException, IOException, SQLException {
         ArrayList<String> artists = new ArrayList<>();
         for(Map.Entry<String, String> entry:artistMap.entrySet()) {
             String originalArtist = entry.getKey();
             String parsedArtist = entry.getValue();
-            String oArtist = originalArtist.toUpperCase();
-            String pArtist = parsedArtist.toUpperCase();
-            String spotifyId = db.getSpotifyID(pArtist);
+            String spotifyId = db.getSpotifyID(parsedArtist);
             if (spotifyId.length() > 0) {
-                System.out.println("We found the artist in the database: " + pArtist);
+                System.out.println("We found the artist in the database: " + parsedArtist);
                 artists.add(spotifyId);
                 break;
             }
             this.spotifyApi = setToken();
             System.out.println("Checking artist: " + originalArtist);
-            SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(pArtist).limit(50).build();
+            SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(parsedArtist).limit(50).build();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();
                 Artist[] artistArr = artistPaging.getItems();
@@ -78,11 +77,11 @@ public class Spotify {
                 for (int x = 0; x < artistArr.length; x++) {
                     String spotifyName = artistArr[x].getName().toUpperCase();
                     String id = artistArr[x].getId();
-                    if (oArtist.equals(spotifyName) || pArtist.equals(spotifyName)) {
-                        if (oArtist.equals(spotifyName))
-                            db.insertArtist(oArtist, id);
+                    if (originalArtist.equals(spotifyName) || parsedArtist.equals(spotifyName)) {
+                        if (originalArtist.equals(spotifyName))
+                            db.insertArtist(originalArtist, id);
                         else
-                            db.insertArtist(pArtist, id);
+                            db.insertArtist(parsedArtist, id);
                         System.out.println("We found the artist in the api: " + spotifyName);
                         artists.add(id);
                         break;
