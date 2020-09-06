@@ -40,13 +40,15 @@ public class Twitter {
             if (artist.contains("+")) {
                 tempArtists = artist.split("\\+");
                 for(int y = 0; y < tempArtists.length; y++){
+                    System.out.println("Added " + tempArtists[y] + " to map");
                     artistMap.put(tempArtists[y],tempArtists[y]);
                 }
             }
             else if (artist.contains(" X ")) {
                 tempArtists = artist.split(" X ");
                 for(int y = 0; y < tempArtists.length; y++){
-                    artistMap.put(artist,tempArtists[y]);
+                    System.out.println("Added " + tempArtists[y] + " to map");
+                    artistMap.put(tempArtists[y],artist);
                 }
             }
             else if(artist.length() > 1){

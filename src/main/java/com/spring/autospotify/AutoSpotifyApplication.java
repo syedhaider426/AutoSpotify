@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class AutoSpotifyApplication {
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
-        Long tweetid = 1222957785454759936L;
+        Long tweetid = 1167487639496417285L;
         Twitter twitter = new Twitter();
         // Gets tweet and parses it
         Map<String, String> artists = twitter.getArtists(tweetid);
@@ -36,13 +37,14 @@ public class AutoSpotifyApplication {
             System.out.println("No artists found");
             return;
         }
-/*
+
         // Search for each artist in db or spotify api
-        ArrayList<String> artistIdList = spotify.searchArtist(artists);
+       ArrayList<String> artistIdList = spotify.searchArtist(artists);
         if(artistIdList.size() <= 0){
             System.out.println("No artists found");
             return;
         }
+ /*
         // Get releases based of the tweet date
         LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
         ArrayList<String> albumReleases = spotify.getReleases(artistIdList,tweetDate);
@@ -53,12 +55,15 @@ public class AutoSpotifyApplication {
         // Get each track to be added to Spotify
         ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
         if(artistIdList.size() <= 0){
-            System.out.println("Tracks for the requests albums were not found");
+            System.out.println("Tracks for the requested albums were not found");
             return;
         }
 
         // Store list of new tracks and the tweet they are related to
         db.insertUriTweet(releases,tweetid);
+
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String playlistId = spotify.createPlaylist("","New Music for " + tweetDate.toString());
 
         // Add songs to playlist
         Boolean songsAdded = false;
@@ -70,8 +75,8 @@ public class AutoSpotifyApplication {
             return;
         }
         // Send user to playlist
-*/
 
+*/
     }
 
 }
