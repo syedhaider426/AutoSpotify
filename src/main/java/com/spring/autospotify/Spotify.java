@@ -97,7 +97,7 @@ public class Spotify {
         return artists;
     }
 
-    public ArrayList<String> getNewReleases(ArrayList<String> artistIdList) throws ParseException, SpotifyWebApiException, IOException {
+    public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) throws ParseException, SpotifyWebApiException, IOException {
         this.spotifyApi = setToken();
         ArrayList<String> spotifyIdList = new ArrayList<>();
         for(int x = 0; x < artistIdList.size(); x++) {
@@ -110,8 +110,8 @@ public class Spotify {
                 LocalDateTime current = LocalDate.now().atStartOfDay();
                 for (int y = 0; y < items.length; y++) {
                     LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
-                    long d1 = Duration.between(releaseDate, current).toDays();
-                    if (d1 <= 28) {
+                    long d1 = Duration.between(releaseDate, tweetDate).toDays();
+                    if (d1 <= 7) {
                         System.out.println(items[y].getReleaseDate());
                         System.out.println("We found the " + items[y].getAlbumType() +
                                 ": " + items[y].getName());

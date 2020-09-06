@@ -22,8 +22,9 @@ public class JDBCUtil {
     public void createArtistTable() throws SQLException {
         String sql1 = "CREATE TABLE IF NOT EXISTS ARTIST" +
                 "(" +
-                "Artist TEXT UNIQUE NOT NULL," +
-                "SpotifyID TEXT UNIQUE NOT NULL" +
+                "Artist TEXT," +
+                "SpotifyID TEXT," +
+                "PRIMARY KEY (Artist,SpotifyID)" +
                 ")";
         PreparedStatement ps1 = db.prepareStatement(sql1);
         ps1.executeUpdate();
@@ -54,7 +55,7 @@ public class JDBCUtil {
 
     public void createUriTweetTable() throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS TWEET_URI (" +
-                "TweetId TEXT NOT NULL," +
+                "TweetId TEXT PRIMARY KEY," +
                 "SpotifyURI TEXT NOT NULL)";
         PreparedStatement ps1 = db.prepareStatement(sql);
         ps1.executeUpdate();
@@ -62,7 +63,7 @@ public class JDBCUtil {
     }
 
     // Insert track/album uri and tweet into tweet_track
-    public void insertUriTweet(ArrayList<String> spotifyUriList, String tweet) throws SQLException{
+    public void insertUriTweet(ArrayList<String> spotifyUriList, Long tweet) throws SQLException{
         String sql = "INSERT INTO TWEET_URI (TweetId,SpotifyURI) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
         for(int x = 0; x < spotifyUriList.size(); x++) {

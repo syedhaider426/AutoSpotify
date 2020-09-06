@@ -7,6 +7,9 @@ import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 public class Twitter {
@@ -40,5 +43,14 @@ public class Twitter {
         Status status = twitter.updateStatus(statusUpdate);
         System.out.println("Replied to " + replyId);
     }
+
+    public String[] getStatusText(long tweetid) throws TwitterException {
+        String status = twitter.showStatus(tweetid).getText().toString();
+        // When parsing, need to start from index of 2
+        return status.split("\n");
+    }
+
+
+
 
 }

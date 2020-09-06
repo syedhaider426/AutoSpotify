@@ -9,6 +9,8 @@ import twitter4j.TwitterException;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +18,9 @@ import java.util.Map;
 //@SpringBootApplication
 public class AutoSpotifyApplication {
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException {
-        String tweetid = "1234";
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException, TwitterException {
+
+
         // Initialize the database
         JDBCUtil db = new JDBCUtil();
         db.createArtistTable();
@@ -25,9 +28,15 @@ public class AutoSpotifyApplication {
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
-        ArrayList<String> artistList = new ArrayList<>();
+        Long tweetid = 1255950588476624896L;
+        Twitter twitter = new Twitter();
+        String[] artistList = twitter.getStatusText(tweetid);
+        LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
         Map<String,String> artists = new HashMap<>();
-        artists.put("Moody Good","Moody Good");
+        if(artists.size() <= 0){
+            System.out.println("No artists found");
+            return;
+        }
 
         // Search for each artist in db or spotify api
         ArrayList<String> artistIdList = spotify.searchArtist(artists);
@@ -35,8 +44,8 @@ public class AutoSpotifyApplication {
             System.out.println("No artists found");
             return;
         }
-        // Get new releases
-        ArrayList<String> albumReleases = spotify.getNewReleases(artistIdList);
+        // Get releases based of the tweet date
+        ArrayList<String> albumReleases = spotify.getReleases(artistIdList,tweetDate);
         if(artistIdList.size() <= 0){
             System.out.println("No new releases found");
             return;
