@@ -49,8 +49,6 @@ public class Spotify {
             spotifyApi.setAccessToken(clientCredentials.getAccessToken());
             System.out.println("Token set");
         }
-        else
-            System.out.println("Token exists");
         return spotifyApi;
     }
 
@@ -62,6 +60,7 @@ public class Spotify {
             String parsedArtist = entry.getValue();
             String spotifyId;
             SearchArtistsRequest searchArtistsRequest;
+            this.spotifyApi = setToken();
             if (parsedArtist.contains(" X ")) {
                 spotifyId = db.getSpotifyID(originalArtist);
                 searchArtistsRequest = spotifyApi.searchArtists(originalArtist).limit(10).build();
@@ -74,7 +73,6 @@ public class Spotify {
                 artists.add(spotifyId);
                 continue;
             }
-            this.spotifyApi = setToken();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();
                 Artist[] artistArr = artistPaging.getItems();
@@ -119,7 +117,6 @@ public class Spotify {
                 final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
                 AlbumSimplified[] items = albums.getItems();
                 DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                LocalDateTime current = LocalDate.now().atStartOfDay();
                 for (int y = 0; y < items.length; y++) {
                     LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
                     long d1 = Duration.between(releaseDate, tweetDate).toDays();

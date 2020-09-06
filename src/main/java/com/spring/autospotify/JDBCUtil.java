@@ -33,7 +33,8 @@ public class JDBCUtil {
 
     // Insert Artist into Artist table
     public void insertArtist(String artist, String spotifyID) throws SQLException {
-        String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?)";
+        String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?) ON CONFLICT ON CONSTRAINT artist_pkey " +
+                "DO NOTHING";
         PreparedStatement ps = db.prepareStatement(sql);
         ps.setString(1, artist);
         ps.setString(2, spotifyID);
@@ -74,6 +75,8 @@ public class JDBCUtil {
         ps.executeBatch();
         System.out.println("Successfully added songs to db");
     }
+
+
 
 
 }

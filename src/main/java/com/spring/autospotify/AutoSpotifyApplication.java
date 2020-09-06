@@ -29,7 +29,7 @@ public class AutoSpotifyApplication {
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
-        Long tweetid = 1167487639496417285L;
+        Long tweetid = 1222957785454759936L;
         Twitter twitter = new Twitter();
         // Gets tweet and parses it
         Map<String, String> artists = twitter.getArtists(tweetid);
