@@ -50,6 +50,13 @@ public class Twitter {
         return status.split("\n");
     }
 
+    public LocalDateTime getStatusDate(long tweetid) throws TwitterException {
+        Status stat = twitter.showStatus(tweetid);
+        long date = stat.getCreatedAt().getTime();
+        LocalDateTime statusDate = new Date(date).toLocalDate().atStartOfDay();
+        return statusDate;
+    }
+
 
 
 
