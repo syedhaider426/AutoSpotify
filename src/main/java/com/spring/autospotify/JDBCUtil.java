@@ -56,7 +56,7 @@ public class JDBCUtil {
 
     public void createUriTweetTable() throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS TWEET_URI (" +
-                "TweetId BIGINT PRIMARY KEY," +
+                "TweetId BIGINT," +
                 "SpotifyURI TEXT NOT NULL)";
         PreparedStatement ps1 = db.prepareStatement(sql);
         ps1.executeUpdate();
@@ -74,6 +74,18 @@ public class JDBCUtil {
         }
         ps.executeBatch();
         System.out.println("Successfully added songs to db");
+    }
+
+    public ArrayList<String> getTracks(Long tweetId) throws SQLException {
+        ArrayList<String> tracks = new ArrayList<>();
+        String sql = "SELECT SpotifyURI FROM TWEET_URI WHERE TweetId = ?";
+        PreparedStatement ps = db.prepareStatement(sql);
+        ps.setLong(1,tweetId);
+        ResultSet result = ps.executeQuery();
+        while(result.next()){
+            tracks.add(result.getString(1));
+        }
+        return tracks;
     }
 
 

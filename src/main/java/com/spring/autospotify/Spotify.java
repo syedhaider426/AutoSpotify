@@ -65,13 +65,12 @@ public class Spotify {
             if (parsedArtist.contains(" X ")) {
                 spotifyId = db.getSpotifyID(originalArtist);
                 searchArtistsRequest = spotifyApi.searchArtists(originalArtist).limit(10).build();
-            }
-            else {
+            } else {
                 spotifyId = db.getSpotifyID(parsedArtist);
                 searchArtistsRequest = spotifyApi.searchArtists(parsedArtist).limit(10).build();
             }
             if (spotifyId.length() > 0) {
-                System.out.println("Found artists in database: "  + originalArtist);
+                System.out.println("Found artists in database: " + originalArtist);
                 artists.add(spotifyId);
                 continue;
             }
@@ -110,6 +109,7 @@ public class Spotify {
     }
 
     public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) throws ParseException, SpotifyWebApiException, IOException {
+        System.out.println("Loading releases");
         this.spotifyApi = setToken();
         ArrayList<String> spotifyIdList = new ArrayList<>();
         for (int x = 0; x < artistIdList.size(); x++) {
@@ -124,15 +124,14 @@ public class Spotify {
                     LocalDateTime releaseDate;
                     try {
                         releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
-                    }
-                    catch(DateTimeParseException e ){
+                    } catch (DateTimeParseException e) {
                         e.printStackTrace();
                         continue;
                     }
                     long d1 = Duration.between(tweetDate, releaseDate).toDays();
                     if (d1 <= 7 && d1 >= -7) {
-                        System.out.println(items[y].getReleaseDate());
-                        System.out.println("We found the " + items[y].getAlbumType() +": " + items[y].getName());
+//                        System.out.println(items[y].getReleaseDate());
+//                        System.out.println("We found the " + items[y].getAlbumType() +": " + items[y].getName());
                         spotifyIdList.add(items[y].getId());
                     }
                 }
@@ -140,10 +139,12 @@ public class Spotify {
                 e.printStackTrace();
             }
         }
+        System.out.println("Ending releases");
         return spotifyIdList;
     }
 
     public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases) {
+        System.out.println("Loading tracks");
         ArrayList<String> releases = new ArrayList<>();
         Map<String, String> releasesMap = new HashMap<>();
         try {
@@ -160,6 +161,7 @@ public class Spotify {
                 releases.add(entry.getValue());
             }
             // return the list
+            System.out.println("Ending tracks");
             return releases;
         } catch (ParseException | SpotifyWebApiException | IOException e) {
             e.printStackTrace();
@@ -187,13 +189,21 @@ public class Spotify {
     }
 
     public Boolean addSongsToPlaylist(String playlistId, ArrayList<String> uris) {
-        this.spotifyApi = getOAuthAccessToken();
         String[] uriArray = uris.toArray(new String[0]);
         try {
-            this.spotifyApi = setToken();
-            AddItemsToPlaylistRequest addItemsToPlaylistRequest = spotifyApi.addItemsToPlaylist(playlistId, uriArray).build();
-            final SnapshotResult snapshotResult = addItemsToPlaylistRequest.execute();
-            System.out.println("Snapshot ID: " + snapshotResult.getSnapshotId());
+            this.spotifyApi = getOAuthAccessToken();
+            int x = 0;
+            while(x < uriArray.length) {
+                int y = x + 90;
+                if(y > uriArray.length)
+                    y = uriArray.length;
+                String[] uriList = Arrays.copyOfRange(uriArray, x, y);
+                AddItemsToPlaylistRequest addItemsToPlaylistRequest = spotifyApi.addItemsToPlaylist(playlistId, uriList).build();
+                final SnapshotResult snapshotResult = addItemsToPlaylistRequest.execute();
+                System.out.println("Snapshot ID: " + snapshotResult.getSnapshotId());
+                x+= 90;
+                //}
+            }
             return true;
         } catch (SpotifyWebApiException | ParseException | IOException e) {
             e.printStackTrace();
