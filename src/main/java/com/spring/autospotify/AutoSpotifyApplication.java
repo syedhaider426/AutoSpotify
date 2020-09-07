@@ -40,7 +40,7 @@ public class AutoSpotifyApplication {
                 return;
             }
         }
-        /*
+
         Twitter twitter = new Twitter();
         // Gets tweet and parses it
         Map<String, String> artists = twitter.getArtists(tweetid);
@@ -88,7 +88,7 @@ public class AutoSpotifyApplication {
         }
         // Send user to playlist
 
-*/
+
     }
 
 }

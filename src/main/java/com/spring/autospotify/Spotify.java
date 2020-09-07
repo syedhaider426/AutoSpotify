@@ -193,15 +193,15 @@ public class Spotify {
         try {
             this.spotifyApi = getOAuthAccessToken();
             int x = 0;
-            while(x < uriArray.length) {
+            while (x < uriArray.length) {
                 int y = x + 90;
-                if(y > uriArray.length)
+                if (y > uriArray.length)
                     y = uriArray.length;
                 String[] uriList = Arrays.copyOfRange(uriArray, x, y);
                 AddItemsToPlaylistRequest addItemsToPlaylistRequest = spotifyApi.addItemsToPlaylist(playlistId, uriList).build();
                 final SnapshotResult snapshotResult = addItemsToPlaylistRequest.execute();
                 System.out.println("Snapshot ID: " + snapshotResult.getSnapshotId());
-                x+= 90;
+                x += 90;
                 //}
             }
             return true;
