@@ -29,6 +29,7 @@ public class Twitter {
     }
 
 
+    // Get all the artists that are mentioned in the tweet
     public Map<String,String> getArtists(long tweetid) throws TwitterException {
         String status = twitter.showStatus(tweetid).getText().toString();
         String[] artists = status.split("\n");
@@ -63,6 +64,7 @@ public class Twitter {
         return artistMap;
     }
 
+    // Get the date of the tweet
     public LocalDateTime getStatusDate(long tweetid) throws TwitterException {
         Status stat = twitter.showStatus(tweetid);
         long date = stat.getCreatedAt().getTime();

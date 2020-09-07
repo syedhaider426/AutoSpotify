@@ -54,6 +54,7 @@ public class JDBCUtil {
         return spotifyId;
     }
 
+    // Creates Tweet_URI table
     public void createUriTweetTable() throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS TWEET_URI (" +
                 "TweetId BIGINT," +
@@ -76,6 +77,7 @@ public class JDBCUtil {
         System.out.println("Successfully added songs to db");
     }
 
+    // If the tweet exists, get track associated with it
     public ArrayList<String> getTracks(Long tweetId) throws SQLException {
         ArrayList<String> tracks = new ArrayList<>();
         String sql = "SELECT SpotifyURI FROM TWEET_URI WHERE TweetId = ?";

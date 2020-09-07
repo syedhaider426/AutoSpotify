@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 //@SpringBootApplication
@@ -24,10 +25,13 @@ public class AutoSpotifyApplication {
         JDBCUtil db = new JDBCUtil();
         db.createArtistTable();
         db.createUriTweetTable();
+
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
         Long tweetid = 1154839581017034752L;
+
+        // If tweet exists, get track associated with it
         ArrayList<String> uriList = db.getTracks(tweetid);
         if (uriList.size() > 0) {
             Boolean songsAdded = false;
@@ -43,11 +47,12 @@ public class AutoSpotifyApplication {
 
         Twitter twitter = new Twitter();
         // Gets tweet and parses it
-        Map<String, String> artists = twitter.getArtists(tweetid);
-        if (artists.size() < 6) {
-            System.out.println("No artists found");
-            return;
-        }
+        //Map<String, String> artists = twitter.getArtists(tweetid);
+        Map<String, String> artists = new HashMap<>();
+//        if (artists.size() < 6) {
+//            System.out.println("No artists found");
+//            return;
+//        }
 
         // Search for each artist in db or spotify api
         ArrayList<String> artistIdList = spotify.searchArtist(artists);
@@ -56,7 +61,7 @@ public class AutoSpotifyApplication {
             System.out.println("No artists found");
             return;
         }
-
+/*
         // Get releases based of the tweet date
         LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
         ArrayList<String> albumReleases = spotify.getReleases(artistIdList, tweetDate);
@@ -86,7 +91,7 @@ public class AutoSpotifyApplication {
             System.out.println("ERROR. Songs not added");
             return;
         }
-        // Send user to playlist
+     */   // Send user to playlist
 
 
     }

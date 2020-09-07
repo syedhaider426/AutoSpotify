@@ -108,41 +108,49 @@ public class Spotify {
         return artists;
     }
 
+    // Get the releases based off the date
     public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) throws ParseException, SpotifyWebApiException, IOException {
         System.out.println("Loading releases");
         this.spotifyApi = setToken();
         ArrayList<String> spotifyIdList = new ArrayList<>();
+        int counter = 0;
+        Boolean found = false;
         for (int x = 0; x < artistIdList.size(); x++) {
+            if(counter > 0)
+                x--;
             GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
                     .limit(50)
+                    .offset(counter)
                     .build();
             try {
                 final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
                 AlbumSimplified[] items = albums.getItems();
                 DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 for (int y = 0; y < items.length; y++) {
-                    LocalDateTime releaseDate;
-                    try {
-                        releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
-                    } catch (DateTimeParseException e) {
-                        e.printStackTrace();
-                        continue;
-                    }
+                    LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
                     long d1 = Duration.between(tweetDate, releaseDate).toDays();
                     if (d1 <= 7 && d1 >= -7) {
 //                        System.out.println(items[y].getReleaseDate());
 //                        System.out.println("We found the " + items[y].getAlbumType() +": " + items[y].getName());
                         spotifyIdList.add(items[y].getId());
+                        found = true;
+                        counter = 0;
                     }
                 }
-            } catch (IOException | SpotifyWebApiException | ParseException e) {
-                e.printStackTrace();
+                if(found == false)
+                    counter +=  50;
+            } catch (IOException | SpotifyWebApiException | ParseException | DateTimeParseException e) {
+                if(e instanceof DateTimeParseException)
+                    continue;
+                else
+                    e.printStackTrace();
             }
         }
         System.out.println("Ending releases");
         return spotifyIdList;
     }
 
+    // Get the tracks based off the date
     public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases) {
         System.out.println("Loading tracks");
         ArrayList<String> releases = new ArrayList<>();
@@ -169,11 +177,13 @@ public class Spotify {
         return null;
     }
 
+    // Get oauth token
     public SpotifyApi getOAuthAccessToken() {
         spotifyApi.setAccessToken("");
         return spotifyApi;
     }
 
+    // Create playlist
     public String createPlaylist(String userId, String name) {
         this.spotifyApi = getOAuthAccessToken();
         CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(userId, name).build();
@@ -188,6 +198,7 @@ public class Spotify {
         return null;
     }
 
+    // Add songs to playlist
     public Boolean addSongsToPlaylist(String playlistId, ArrayList<String> uris) {
         String[] uriArray = uris.toArray(new String[0]);
         try {
