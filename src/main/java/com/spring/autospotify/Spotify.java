@@ -20,7 +20,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.logging.Level;
 
 
 public class Spotify {
@@ -34,7 +36,6 @@ public class Spotify {
 
 
     public Spotify() throws IOException, SQLException, ClassNotFoundException {
-
         SpotifyApi spotifyApi = new SpotifyApi.Builder()
                 .setClientId(spotifyClientId)
                 .setClientSecret(spotifyClientSecret)
@@ -70,6 +71,7 @@ public class Spotify {
                 searchArtistsRequest = spotifyApi.searchArtists(parsedArtist).limit(10).build();
             }
             if (spotifyId.length() > 0) {
+                System.out.println("Found artists in database: "  + originalArtist);
                 artists.add(spotifyId);
                 continue;
             }
@@ -112,18 +114,25 @@ public class Spotify {
         ArrayList<String> spotifyIdList = new ArrayList<>();
         for (int x = 0; x < artistIdList.size(); x++) {
             GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
+                    .limit(50)
                     .build();
             try {
                 final Paging<AlbumSimplified> albums = getArtistsAlbumsRequest.execute();
                 AlbumSimplified[] items = albums.getItems();
                 DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 for (int y = 0; y < items.length; y++) {
-                    LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
-                    long d1 = Duration.between(releaseDate, tweetDate).toDays();
-                    if (d1 <= 7) {
+                    LocalDateTime releaseDate;
+                    try {
+                        releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
+                    }
+                    catch(DateTimeParseException e ){
+                        e.printStackTrace();
+                        continue;
+                    }
+                    long d1 = Duration.between(tweetDate, releaseDate).toDays();
+                    if (d1 <= 7 && d1 >= -7) {
                         System.out.println(items[y].getReleaseDate());
-                        System.out.println("We found the " + items[y].getAlbumType() +
-                                ": " + items[y].getName());
+                        System.out.println("We found the " + items[y].getAlbumType() +": " + items[y].getName());
                         spotifyIdList.add(items[y].getId());
                     }
                 }

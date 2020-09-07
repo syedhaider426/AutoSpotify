@@ -9,17 +9,16 @@ import twitter4j.TwitterException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 //@SpringBootApplication
 public class AutoSpotifyApplication {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException, TwitterException {
+
 
 
         // Initialize the database
@@ -29,7 +28,7 @@ public class AutoSpotifyApplication {
         // Create instance of Spotify
         Spotify spotify = new Spotify();
 
-        Long tweetid = 1222957785454759936L;
+        Long tweetid = 1154839581017034752L;
         Twitter twitter = new Twitter();
         // Gets tweet and parses it
         Map<String, String> artists = twitter.getArtists(tweetid);
@@ -39,12 +38,13 @@ public class AutoSpotifyApplication {
         }
 
         // Search for each artist in db or spotify api
-       ArrayList<String> artistIdList = spotify.searchArtist(artists);
+        ArrayList<String> artistIdList = spotify.searchArtist(artists);
+        //ArrayList<String> artistIdList = new ArrayList<>();
         if(artistIdList.size() <= 0){
             System.out.println("No artists found");
             return;
         }
- /*
+
         // Get releases based of the tweet date
         LocalDateTime tweetDate = twitter.getStatusDate(tweetid);
         ArrayList<String> albumReleases = spotify.getReleases(artistIdList,tweetDate);
@@ -60,14 +60,14 @@ public class AutoSpotifyApplication {
         }
 
         // Store list of new tracks and the tweet they are related to
-        db.insertUriTweet(releases,tweetid);
+        //db.insertUriTweet(releases,tweetid);
 
         DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         String playlistId = spotify.createPlaylist("","New Music for " + tweetDate.toString());
 
         // Add songs to playlist
         Boolean songsAdded = false;
-        songsAdded = spotify.addSongsToPlaylist("19Cg0aKbM7UtUfdx873CEA", releases);
+        //songsAdded = spotify.addSongsToPlaylist("19Cg0aKbM7UtUfdx873CEA", releases);
         if (songsAdded)
             System.out.println("Songs were added successfully");
         else {
@@ -76,7 +76,7 @@ public class AutoSpotifyApplication {
         }
         // Send user to playlist
 
-*/
+
     }
 
 }

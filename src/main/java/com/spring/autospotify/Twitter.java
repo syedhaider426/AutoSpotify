@@ -55,6 +55,8 @@ public class Twitter {
                 System.out.println("Added " + artist + " to map");
                 artistMap.put(artist, artist);
             }
+            else
+                break;
         }
         // When parsing, need to start from index of 2
 

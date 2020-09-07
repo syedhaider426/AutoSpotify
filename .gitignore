@@ -61,3 +61,4 @@ src/main/resources/secrets.properties
 src/main/resources/secrets.properties
 *.properties
 src/main/resources/secrets.properties
+src/main/resources/logback.xml
