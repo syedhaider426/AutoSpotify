@@ -32,10 +32,10 @@ public class Spotify {
     String spotifyClientId = prop.getProperty("spotifyClientId");
     String spotifyClientSecret = prop.getProperty("spotifyClientSecret");
 
-    JDBCUtil db = new JDBCUtil();
+    JDBCUtil db = JDBCUtil.getInstance();
 
 
-    public Spotify() throws IOException, SQLException, ClassNotFoundException {
+    public Spotify() throws IOException {
         SpotifyApi spotifyApi = new SpotifyApi.Builder()
                 .setClientId(spotifyClientId)
                 .setClientSecret(spotifyClientSecret)
@@ -54,7 +54,7 @@ public class Spotify {
     }
 
     // Search artist will do an api call, verify the artist exists in Spotify, and return spotifyid back
-    public ArrayList<String> searchArtist(Map<String, String> artistMap) throws ParseException, SpotifyWebApiException, IOException, SQLException {
+    public ArrayList<String> searchArtist(Map<String, String> artistMap) throws ParseException, SpotifyWebApiException, IOException, SQLException, ClassNotFoundException {
         ArrayList<String> artists = new ArrayList<>();
         for (Map.Entry<String, String> entry : artistMap.entrySet()) {
             String originalArtist = entry.getKey();
@@ -116,7 +116,7 @@ public class Spotify {
         int counter = 0;
         Boolean found = false;
         for (int x = 0; x < artistIdList.size(); x++) {
-            if(counter > 0)
+            if (counter > 0)
                 x--;
             GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
                     .limit(50)
@@ -137,10 +137,10 @@ public class Spotify {
                         counter = 0;
                     }
                 }
-                if(found == false)
-                    counter +=  50;
+                if (found == false)
+                    counter += 50;
             } catch (IOException | SpotifyWebApiException | ParseException | DateTimeParseException e) {
-                if(e instanceof DateTimeParseException)
+                if (e instanceof DateTimeParseException)
                     continue;
                 else
                     e.printStackTrace();

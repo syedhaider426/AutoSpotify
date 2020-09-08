@@ -14,7 +14,7 @@ public class Twitter {
     private final twitter4j.Twitter twitter;
     GetPropertyValues properties = new GetPropertyValues();
     Properties prop = properties.getPropValues();
-    JDBCUtil db = new JDBCUtil();
+    JDBCUtil db = JDBCUtil.getInstance();
 
     public Twitter() throws IOException, SQLException, ClassNotFoundException {
         ConfigurationBuilder cb = new ConfigurationBuilder();

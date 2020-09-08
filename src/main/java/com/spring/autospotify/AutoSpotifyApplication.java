@@ -21,7 +21,7 @@ public class AutoSpotifyApplication {
 
 
         // Initialize the database
-        JDBCUtil db = new JDBCUtil();
+        JDBCUtil db = JDBCUtil.getInstance();
         db.createArtistTable();
         db.createUriTweetTable();
 
