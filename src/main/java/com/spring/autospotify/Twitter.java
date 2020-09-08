@@ -1,13 +1,11 @@
 package com.spring.autospotify;
 
-import twitter4j.Status;
-import twitter4j.StatusUpdate;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
+import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -16,9 +14,12 @@ public class Twitter {
     private final twitter4j.Twitter twitter;
     GetPropertyValues properties = new GetPropertyValues();
     Properties prop = properties.getPropValues();
-    public Twitter() throws IOException {
+    JDBCUtil db = new JDBCUtil();
+
+    public Twitter() throws IOException, SQLException, ClassNotFoundException {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(false)
+                .setUser("autospotify426")
                 .setOAuthConsumerKey(prop.getProperty("consumerKey"))
                 .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
                 .setOAuthAccessToken(prop.getProperty("accessToken"))
@@ -26,6 +27,33 @@ public class Twitter {
         TwitterFactory tf = new TwitterFactory(cb.build());
         twitter4j.Twitter twitter = tf.getInstance();
         this.twitter = twitter;
+    }
+
+    //348768375 - B&L
+    //729066981077311488 - RiverBeats1
+    //62786088 - DancingAstro
+    public Map<Long,Long> getMentions() throws TwitterException {
+        //key = tweetid
+        //value inreplytostatusid
+        Map<Long, Long> tweets = new HashMap<>();
+        ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
+        long[] createdByList = {348768375L,729066981077311488L,62786088L};
+        long max_id;
+        for(int i = 0; i < responseList.size(); i++){
+            Status stat = responseList.get(i);
+            if(Arrays.asList(createdByList).contains(stat.getInReplyToUserId()) == false)
+                replyTweet(stat.getInReplyToStatusId(),"You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
+            else {
+                tweets.put(stat.getId(), stat.getInReplyToStatusId());
+            }
+        }
+        return tweets;
+    }
+
+    public void replyTweet(long inReplyToStatusId, String tweet) throws TwitterException{
+        StatusUpdate status = new StatusUpdate(tweet);
+        status.setInReplyToStatusId(inReplyToStatusId);
+        twitter.updateStatus(status);
     }
 
 
