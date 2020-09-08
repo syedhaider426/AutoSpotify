@@ -17,7 +17,7 @@ import java.util.Map;
 //@SpringBootApplication
 public class AutoSpotifyApplication {
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, IOException, TwitterException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, ParseException, SpotifyWebApiException, TwitterException {
 
 
         // Initialize the database
@@ -53,8 +53,8 @@ public class AutoSpotifyApplication {
             }
 
             // Gets tweet and parses it
-            Map<String, String> artists = twitter.getArtists(tweetid);
-            if (artists.size() < 2) {
+            ArrayList<String> artists = twitter.getArtists(tweetid);
+            if (artists.size() < 6) {
                 System.out.println("No artists found");
                 return;
             }

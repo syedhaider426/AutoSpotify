@@ -22,77 +22,70 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.logging.Level;
 
 
 public class Spotify {
     private SpotifyApi spotifyApi;
-    GetPropertyValues properties = new GetPropertyValues();
-    Properties prop = properties.getPropValues();
-    String spotifyClientId = prop.getProperty("spotifyClientId");
-    String spotifyClientSecret = prop.getProperty("spotifyClientSecret");
-
     JDBCUtil db = JDBCUtil.getInstance();
 
-
-    public Spotify() throws IOException {
-        SpotifyApi spotifyApi = new SpotifyApi.Builder()
-                .setClientId(spotifyClientId)
-                .setClientSecret(spotifyClientSecret)
-                .build();
-        this.spotifyApi = spotifyApi;
+    public Spotify() {
+        Properties prop = null;
+        try {
+            GetPropertyValues properties = new GetPropertyValues();
+            prop = properties.getPropValues();
+            SpotifyApi spotifyApi = new SpotifyApi.Builder()
+                    .setClientId(prop.getProperty("spotifyClientId"))
+                    .setClientSecret(prop.getProperty("spotifyClientSecret"))
+                    .build();
+            this.spotifyApi = spotifyApi;
+        } catch (IOException ex) { //IOException throw by Prop
+            ex.printStackTrace();
+        }
     }
 
-    public SpotifyApi setToken() throws ParseException, SpotifyWebApiException, IOException {
-        if (spotifyApi.getAccessToken() == null) {
-            ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
-            ClientCredentials clientCredentials = clientCredentialsRequest.execute();
-            spotifyApi.setAccessToken(clientCredentials.getAccessToken());
-            System.out.println("Token set");
+    public SpotifyApi setToken() {
+        try {
+            if (spotifyApi.getAccessToken() == null) {
+                ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
+                ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+                spotifyApi.setAccessToken(clientCredentials.getAccessToken());
+                System.out.println("Token set");
+            }
+            return spotifyApi;
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            e.printStackTrace();
         }
         return spotifyApi;
     }
 
     // Search artist will do an api call, verify the artist exists in Spotify, and return spotifyid back
-    public ArrayList<String> searchArtist(Map<String, String> artistMap) throws ParseException, SpotifyWebApiException, IOException, SQLException, ClassNotFoundException {
+    public ArrayList<String> searchArtist(ArrayList<String> artistList) throws ParseException, SpotifyWebApiException, SQLException {
         ArrayList<String> artists = new ArrayList<>();
-        for (Map.Entry<String, String> entry : artistMap.entrySet()) {
-            String originalArtist = entry.getKey();
-            String parsedArtist = entry.getValue();
-            String spotifyId;
-            SearchArtistsRequest searchArtistsRequest;
-            this.spotifyApi = setToken();
-            if (parsedArtist.contains(" X ")) {
-                spotifyId = db.getSpotifyID(originalArtist);
-                searchArtistsRequest = spotifyApi.searchArtists(originalArtist).limit(10).build();
-            } else {
-                spotifyId = db.getSpotifyID(parsedArtist);
-                searchArtistsRequest = spotifyApi.searchArtists(parsedArtist).limit(10).build();
-            }
+        String spotifyId;
+        for (String artist : artistList) {
+            spotifyId = db.getSpotifyID(artist);
             if (spotifyId.length() > 0) {
-                System.out.println("Found artists in database: " + originalArtist);
+                System.out.println("Found artist in database: " + artist);
                 artists.add(spotifyId);
                 continue;
             }
+            this.spotifyApi = setToken();
+            SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(artist).limit(10).build();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();
                 Artist[] artistArr = artistPaging.getItems();
                 if (artistArr.length == 0) {
-                    System.out.println("No artist found with name: " + parsedArtist);
+                    System.out.println("No artist found with name: " + artist);
                     continue;
                 }
                 for (int x = 0; x < artistArr.length; x++) {
                     String spotifyName = artistArr[x].getName().toUpperCase();
                     String id = artistArr[x].getId();
                     LevenshteinDistance l = new LevenshteinDistance();
-                    int originalLeven = l.apply(originalArtist, spotifyName);
-                    int parsedLeven = l.apply(parsedArtist, spotifyName);
-                    if (originalArtist.equals(spotifyName) || parsedArtist.equals(spotifyName) || originalLeven <= 2 || parsedLeven <= 2) {
-                        if ((originalLeven > 0 && originalLeven <= 2) || (parsedLeven > 0 && parsedLeven <= 2)) {
-                            if (parsedArtist.contains(" X "))
-                                db.insertArtist(originalArtist, id);
-                            else
-                                db.insertArtist(parsedArtist, id);
+                    int originalLeven = l.apply(artist, spotifyName);
+                    if (artist.equals(spotifyName) || originalLeven <= 2) {
+                        if ((originalLeven > 0 && originalLeven <= 2)) {
+                            db.insertArtist(artist, id);
                         }
                         db.insertArtist(spotifyName, id);
                         System.out.println("We found the artist in the api: " + spotifyName);
@@ -100,7 +93,7 @@ public class Spotify {
                         break;
                     }
                 }
-                System.out.println("No artist found with name: " + originalArtist + " or " + parsedArtist);
+                System.out.println("No artist found with name: " + artist);
             } catch (IOException | SpotifyWebApiException | ParseException e) {
                 e.printStackTrace();
             }
@@ -109,7 +102,7 @@ public class Spotify {
     }
 
     // Get the releases based off the date
-    public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) throws ParseException, SpotifyWebApiException, IOException {
+    public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) {
         System.out.println("Loading releases");
         this.spotifyApi = setToken();
         ArrayList<String> spotifyIdList = new ArrayList<>();

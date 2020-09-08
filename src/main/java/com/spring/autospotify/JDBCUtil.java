@@ -60,11 +60,11 @@ public class JDBCUtil {
     }
 
     // Get spotify id of an artist
-    public String getSpotifyID(String parsedArtist) throws SQLException {
+    public String getSpotifyID(String artist) throws SQLException {
         Connection db = getConnection();
         String sql = "SELECT SpotifyID FROM ARTIST Where UPPER(ARTIST) = ?";
         PreparedStatement ps = db.prepareStatement(sql);
-        ps.setString(1, parsedArtist);
+        ps.setString(1, artist);
         ResultSet result = ps.executeQuery();
         String spotifyId = "";
         while (result.next()) {

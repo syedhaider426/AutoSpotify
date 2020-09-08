@@ -5,44 +5,45 @@ import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.sql.Date;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class Twitter {
-    private final twitter4j.Twitter twitter;
-    GetPropertyValues properties = new GetPropertyValues();
-    Properties prop = properties.getPropValues();
-    JDBCUtil db = JDBCUtil.getInstance();
+    private twitter4j.Twitter twitter;
 
-    public Twitter() throws IOException, SQLException, ClassNotFoundException {
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(false)
-                .setUser("autospotify426")
-                .setOAuthConsumerKey(prop.getProperty("consumerKey"))
-                .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
-                .setOAuthAccessToken(prop.getProperty("accessToken"))
-                .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        twitter4j.Twitter twitter = tf.getInstance();
-        this.twitter = twitter;
+    public Twitter() {
+        try {
+            GetPropertyValues properties = new GetPropertyValues();
+            Properties prop = properties.getPropValues();
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.setDebugEnabled(false)
+                    .setUser("autospotify426")
+                    .setOAuthConsumerKey(prop.getProperty("consumerKey"))
+                    .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
+                    .setOAuthAccessToken(prop.getProperty("accessToken"))
+                    .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
+            TwitterFactory tf = new TwitterFactory(cb.build());
+            twitter4j.Twitter twitter = tf.getInstance();
+            this.twitter = twitter;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     //348768375 - B&L
     //729066981077311488 - RiverBeats1
     //62786088 - DancingAstro
-    public Map<Long,Long> getMentions() throws TwitterException {
+    public Map<Long, Long> getMentions() throws TwitterException {
         //key = tweetid
         //value inreplytostatusid
         Map<Long, Long> tweets = new HashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
-        long[] createdByList = {348768375L,729066981077311488L,62786088L};
+        long[] createdByList = {348768375L, 729066981077311488L, 62786088L};
         long max_id;
-        for(int i = 0; i < responseList.size(); i++){
+        for (int i = 0; i < responseList.size(); i++) {
             Status stat = responseList.get(i);
-            if(Arrays.asList(createdByList).contains(stat.getInReplyToUserId()) == false)
-                replyTweet(stat.getInReplyToStatusId(),"You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
+            if (Arrays.asList(createdByList).contains(stat.getInReplyToUserId()) == false)
+                replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
             else {
                 tweets.put(stat.getId(), stat.getInReplyToStatusId());
             }
@@ -50,7 +51,7 @@ public class Twitter {
         return tweets;
     }
 
-    public void replyTweet(long inReplyToStatusId, String tweet) throws TwitterException{
+    public void replyTweet(long inReplyToStatusId, String tweet) throws TwitterException {
         StatusUpdate status = new StatusUpdate(tweet);
         status.setInReplyToStatusId(inReplyToStatusId);
         twitter.updateStatus(status);
@@ -58,38 +59,36 @@ public class Twitter {
 
 
     // Get all the artists that are mentioned in the tweet
-    public Map<String,String> getArtists(long tweetid) throws TwitterException {
-        String status = twitter.showStatus(tweetid).getText().toString();
-        String[] artists = status.split("\n");
+    public ArrayList<String> getArtists(long tweetid) throws TwitterException {
+        ArrayList<String> artistList = new ArrayList<>();
         String[] tempArtists;
-        Map<String,String> artistMap = new HashMap<>();
-        for (int x = 2; x < artists.length; x++) {
+
+        String status = twitter.showStatus(tweetid).getText();
+        String[] artists = status.split("\n");
+        String[] artistsWithX = {"BONNIE X CLYDE", "LIL NAS X", "SOB X RBE"};
+        int artistsLength = artists.length;
+
+        for (int x = 2; x < artistsLength; x++) {
             tempArtists = null;
             String artist = artists[x].toUpperCase();
             if (artist.contains("+")) {
                 tempArtists = artist.split("\\+");
-                for(int y = 0; y < tempArtists.length; y++){
-                    System.out.println("Added " + tempArtists[y] + " to map");
-                    artistMap.put(tempArtists[y],tempArtists[y]);
+                for (String tempArtist: tempArtists) {
+                    artistList.add(tempArtist);
                 }
-            }
-            else if (artist.contains(" X ")) {
+            } else if (artist.contains(" X ") && !(Arrays.asList(artistsWithX).contains(artist))) {
                 tempArtists = artist.split(" X ");
-                for(int y = 0; y < tempArtists.length; y++){
-                    System.out.println("Added " + tempArtists[y] + " to map");
-                    artistMap.put(tempArtists[y],artist);
+                for (String tempArtist: tempArtists) {
+                    artistList.add(tempArtist);
                 }
-            }
-            else if(artist.length() > 1){
-                System.out.println("Added " + artist + " to map");
-                artistMap.put(artist, artist);
-            }
-            else
+            } else if (artistsLength > 1) {
+                artistList.add(artist);
+            } else  // This occurs when all artists have been parsed and there is an empty line afterwards
                 break;
         }
         // When parsing, need to start from index of 2
 
-        return artistMap;
+        return artistList;
     }
 
     // Get the date of the tweet
