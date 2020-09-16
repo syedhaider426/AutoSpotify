@@ -72,17 +72,22 @@ public class Twitter {
 
         for (int x = 2; x < artistsLength; x++) {
             tempArtists = null;
-            String artist = artists[x].toUpperCase().trim();
-            System.out.println(artist);
+            String artist = artists[x].toUpperCase();
             if (artist.contains("+")) {
                 tempArtists = artist.split("\\+");
                 for (String tempArtist : tempArtists) {
-                    artistList.add(tempArtist);
+                    artistList.add(tempArtist.trim());
                 }
             } else if (artist.contains(" X ") && !(Arrays.asList(artistsWithX).contains(artist))) {
                 tempArtists = artist.split(" X ");
                 for (String tempArtist : tempArtists) {
-                    artistList.add(tempArtist);
+                    artistList.add(tempArtist.trim());
+                }
+            } else if (artist.contains("[R]")) {
+                tempArtists = artist.split("[R]");
+                for (String tempArtist : tempArtists) {
+                    artistList.add(tempArtist.trim());
+                    break;  //Only get the first artist
                 }
             } else if (artist.length() > 1) {
                 artistList.add(artist);

@@ -78,7 +78,7 @@ public class AutoSpotifyApplication {
             if (artistIdList.size() <= 0) {
                 System.out.println("No new releases found");
                 continue;
-            }/*
+            }
             // Get each track to be added to Spotify
             ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
             if (artistIdList.size() <= 0) {
@@ -87,7 +87,7 @@ public class AutoSpotifyApplication {
             }
 
             // Store list of new tracks and the tweet they are related to
-            //db.insertUriTweet(releases, tweetid);
+            db.insertUriTweet(releases, tweetid);
 
             DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             String playlistId = spotify.createPlaylist("", "New Music for " + tweetDate.toLocalDate().format(format));
@@ -101,7 +101,7 @@ public class AutoSpotifyApplication {
             } else {
                 System.out.println("ERROR. Songs not added");
                 //twitter.replyTweet(tweetid,"Unable to add songs to playlist. Please try again later.");
-            }*/
+            }
         }
 
     }
