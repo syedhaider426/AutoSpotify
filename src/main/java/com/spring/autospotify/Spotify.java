@@ -26,9 +26,9 @@ import java.util.*;
 
 public class Spotify {
     private SpotifyApi spotifyApi;
-    JDBCUtil db = JDBCUtil.getInstance();
+    private JDBCUtil db;
 
-    public Spotify() {
+    public Spotify(JDBCUtil db) {
         Properties prop = null;
         try {
             GetPropertyValues properties = new GetPropertyValues();
@@ -37,6 +37,7 @@ public class Spotify {
                     .setClientId(prop.getProperty("spotifyClientId"))
                     .setClientSecret(prop.getProperty("spotifyClientSecret"))
                     .build();
+            this.db = db;
             this.spotifyApi = spotifyApi;
         } catch (IOException ex) { //IOException throw by Prop
             ex.printStackTrace();
@@ -62,7 +63,8 @@ public class Spotify {
     public ArrayList<String> searchArtist(ArrayList<String> artistList) throws ParseException, SpotifyWebApiException, SQLException {
         ArrayList<String> artists = new ArrayList<>();
         String spotifyId;
-        for (String artist : artistList) {
+        for (int i = 0; i < artistList.size(); i++) {
+            String artist = artistList.get(i);
             spotifyId = db.getSpotifyID(artist);
             if (spotifyId.length() > 0) {
                 System.out.println("Found artist in database: " + artist);
@@ -70,6 +72,7 @@ public class Spotify {
                 continue;
             }
             this.spotifyApi = setToken();
+            System.out.println("Checking artist: " + artist);
             SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(artist).limit(10).build();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();
@@ -93,7 +96,6 @@ public class Spotify {
                         break;
                     }
                 }
-                System.out.println("No artist found with name: " + artist);
             } catch (IOException | SpotifyWebApiException | ParseException e) {
                 e.printStackTrace();
             }
@@ -104,13 +106,15 @@ public class Spotify {
     // Get the releases based off the date
     public ArrayList<String> getReleases(ArrayList<String> artistIdList, LocalDateTime tweetDate) {
         System.out.println("Loading releases");
-        this.spotifyApi = setToken();
         ArrayList<String> spotifyIdList = new ArrayList<>();
         int counter = 0;
         Boolean found = false;
-        for (int x = 0; x < artistIdList.size(); x++) {
-            if (counter > 0)
-                x--;
+        for (int x = 0; x < 2; x++) {
+            if (counter > 0) {
+                x = x - 1;
+            }
+            this.spotifyApi = setToken();
+            System.out.println("Checking artist: " + artistIdList.get(x));
             GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
                     .limit(50)
                     .offset(counter)
@@ -122,16 +126,24 @@ public class Spotify {
                 for (int y = 0; y < items.length; y++) {
                     LocalDateTime releaseDate = LocalDate.parse(items[y].getReleaseDate(), format).atStartOfDay();
                     long d1 = Duration.between(tweetDate, releaseDate).toDays();
-                    if (d1 <= 7 && d1 >= -7) {
-//                        System.out.println(items[y].getReleaseDate());
-//                        System.out.println("We found the " + items[y].getAlbumType() +": " + items[y].getName());
+                    if (d1 <= 8 && d1 >= -8) {
+                        System.out.println("Found a song for: " + artistIdList.get(x));
                         spotifyIdList.add(items[y].getId());
                         found = true;
                         counter = 0;
                     }
                 }
-                if (found == false)
+                if(found) {
+                    System.out.println("Fouind is true");
+                    continue;
+                }
+                else if (!found && counter == 0) {
+                    System.out.println("No song found. Checking next 50");
                     counter += 50;
+                } else if(!found && counter == 50){
+                    System.out.println("No song found. Going to next artist");
+                    counter = 0;
+                }
             } catch (IOException | SpotifyWebApiException | ParseException | DateTimeParseException e) {
                 if (e instanceof DateTimeParseException)
                     continue;

@@ -10,24 +10,20 @@ import java.util.*;
 
 public class Twitter {
     private twitter4j.Twitter twitter;
+    GetPropertyValues properties = new GetPropertyValues();
+    Properties prop = properties.getPropValues();
 
-    public Twitter() {
-        try {
-            GetPropertyValues properties = new GetPropertyValues();
-            Properties prop = properties.getPropValues();
-            ConfigurationBuilder cb = new ConfigurationBuilder();
-            cb.setDebugEnabled(false)
-                    .setUser("autospotify426")
-                    .setOAuthConsumerKey(prop.getProperty("consumerKey"))
-                    .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
-                    .setOAuthAccessToken(prop.getProperty("accessToken"))
-                    .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
-            TwitterFactory tf = new TwitterFactory(cb.build());
-            twitter4j.Twitter twitter = tf.getInstance();
-            this.twitter = twitter;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public Twitter() throws IOException {
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(false)
+                .setUser("autospotify426")
+                .setOAuthConsumerKey(prop.getProperty("consumerKey"))
+                .setOAuthConsumerSecret(prop.getProperty("consumerSecret"))
+                .setOAuthAccessToken(prop.getProperty("accessToken"))
+                .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        twitter = tf.getInstance();
+        this.twitter = twitter;
     }
 
     //348768375 - B&L
@@ -36,16 +32,21 @@ public class Twitter {
     public Map<Long, Long> getMentions() throws TwitterException {
         //key = tweetid
         //value inreplytostatusid
-        Map<Long, Long> tweets = new HashMap<>();
+        Map<Long, Long> tweets = new LinkedHashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
-        long[] createdByList = {348768375L, 729066981077311488L, 62786088L};
-        long max_id;
-        for (int i = 0; i < responseList.size(); i++) {
-            Status stat = responseList.get(i);
-            if (Arrays.asList(createdByList).contains(stat.getInReplyToUserId()) == false)
-                replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
-            else {
-                tweets.put(stat.getId(), stat.getInReplyToStatusId());
+
+        long[] approvedUserIdList = {348768375L, 729066981077311488L, 62786088L};
+        for (Status stat : responseList) {
+            for (Long approvedUserId : approvedUserIdList) {
+                Long inReplyToUserId = stat.getInReplyToUserId();
+                if (!approvedUserId.equals(inReplyToUserId))
+                    System.out.print("");
+                    //replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
+                else if (!inReplyToUserId.equals(-1L)) {
+                    System.out.println("Id - 2: " + stat.getInReplyToStatusId());
+                    System.out.println("StatusID - 2:" + stat.getId());
+                    tweets.put(stat.getInReplyToStatusId(), stat.getId());
+                }
             }
         }
         return tweets;
@@ -53,6 +54,7 @@ public class Twitter {
 
     public void replyTweet(long inReplyToStatusId, String tweet) throws TwitterException {
         StatusUpdate status = new StatusUpdate(tweet);
+        System.out.println("inreplytostatusid - " + inReplyToStatusId);
         status.setInReplyToStatusId(inReplyToStatusId);
         twitter.updateStatus(status);
     }
@@ -70,18 +72,19 @@ public class Twitter {
 
         for (int x = 2; x < artistsLength; x++) {
             tempArtists = null;
-            String artist = artists[x].toUpperCase();
+            String artist = artists[x].toUpperCase().trim();
+            System.out.println(artist);
             if (artist.contains("+")) {
                 tempArtists = artist.split("\\+");
-                for (String tempArtist: tempArtists) {
+                for (String tempArtist : tempArtists) {
                     artistList.add(tempArtist);
                 }
             } else if (artist.contains(" X ") && !(Arrays.asList(artistsWithX).contains(artist))) {
                 tempArtists = artist.split(" X ");
-                for (String tempArtist: tempArtists) {
+                for (String tempArtist : tempArtists) {
                     artistList.add(tempArtist);
                 }
-            } else if (artistsLength > 1) {
+            } else if (artist.length() > 1) {
                 artistList.add(artist);
             } else  // This occurs when all artists have been parsed and there is an empty line afterwards
                 break;
