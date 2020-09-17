@@ -56,7 +56,7 @@ public class AutoSpotifyApplication {
                     continue;
                 }
             }
-
+/*
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetid);
             if (artists.size() < 2) {
@@ -101,7 +101,7 @@ public class AutoSpotifyApplication {
             } else {
                 System.out.println("ERROR. Songs not added");
                 //twitter.replyTweet(tweetid,"Unable to add songs to playlist. Please try again later.");
-            }
+            }*/
         }
 
     }

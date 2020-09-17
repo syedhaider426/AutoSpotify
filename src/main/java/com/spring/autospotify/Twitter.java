@@ -29,24 +29,27 @@ public class Twitter {
     //348768375 - B&L
     //729066981077311488 - RiverBeats1
     //62786088 - DancingAstro
+    //709746338376896513 - Electric Hawk
     public Map<Long, Long> getMentions() throws TwitterException {
         //key = tweetid
         //value inreplytostatusid
         Map<Long, Long> tweets = new LinkedHashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
 
-        long[] approvedUserIdList = {348768375L, 729066981077311488L, 62786088L};
+        long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
+        Boolean found = false;
         for (Status stat : responseList) {
+            Long inReplyToUserId = stat.getInReplyToUserId();
             for (Long approvedUserId : approvedUserIdList) {
-                Long inReplyToUserId = stat.getInReplyToUserId();
-                if (!approvedUserId.equals(inReplyToUserId))
-                    System.out.print("");
-                    //replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, or DancingAstro.");
-                else if (!inReplyToUserId.equals(-1L)) {
-                    System.out.println("Id - 2: " + stat.getInReplyToStatusId());
-                    System.out.println("StatusID - 2:" + stat.getId());
+                if (approvedUserId.equals(inReplyToUserId)) {
                     tweets.put(stat.getInReplyToStatusId(), stat.getId());
+                    found = true;
+                    break;
                 }
+            }
+            if(!found) {
+                System.out.println("No matching account made");
+                //replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, ElectricHawk, or DancingAstro.");
             }
         }
         return tweets;
