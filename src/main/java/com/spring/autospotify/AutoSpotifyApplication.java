@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 //@SpringBootApplication
@@ -27,7 +26,6 @@ public class AutoSpotifyApplication {
 
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
-
         Twitter twitter = new Twitter();
         //key = tweetid, value = inreplytostatusid
         Map<Long, Long> tweetIdList = twitter.getMentions();
@@ -56,7 +54,7 @@ public class AutoSpotifyApplication {
                     continue;
                 }
             }
-/*
+
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetid);
             if (artists.size() < 2) {
@@ -90,18 +88,21 @@ public class AutoSpotifyApplication {
             db.insertUriTweet(releases, tweetid);
 
             DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-            String playlistId = spotify.createPlaylist("", "New Music for " + tweetDate.toLocalDate().format(format));
+            String playlistId = spotify.createPlaylist("shayder426", "New Music for " + tweetDate.toLocalDate().format(format));
+            System.out.println("NEW PLAYLIST");
             System.out.println(tweetDate.toLocalDate().format(format));
             // Add songs to playlist
             Boolean songsAdded = false;
-            songsAdded = spotify.addSongsToPlaylist("19Cg0aKbM7UtUfdx873CEA", releases);
+            songsAdded = spotify.addSongsToPlaylist(playlistId, releases);
             if (songsAdded) {
                 System.out.println("Songs were added successfully");
                 //twitter.replyTweet(tweetid,"Poggers. This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId );
             } else {
                 System.out.println("ERROR. Songs not added");
                 //twitter.replyTweet(tweetid,"Unable to add songs to playlist. Please try again later.");
-            }*/
+            }
+            spotify.setToken();
+            break;
         }
 
     }

@@ -35,7 +35,6 @@ public class Twitter {
         //value inreplytostatusid
         Map<Long, Long> tweets = new LinkedHashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
-
         long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
         Boolean found = false;
         for (Status stat : responseList) {
@@ -67,12 +66,10 @@ public class Twitter {
     public ArrayList<String> getArtists(long tweetid) throws TwitterException {
         ArrayList<String> artistList = new ArrayList<>();
         String[] tempArtists;
-
         String status = twitter.showStatus(tweetid).getText();
         String[] artists = status.split("\n");
         String[] artistsWithX = {"BONNIE X CLYDE", "LIL NAS X", "SOB X RBE"};
         int artistsLength = artists.length;
-
         for (int x = 2; x < artistsLength; x++) {
             tempArtists = null;
             String artist = artists[x].toUpperCase();
@@ -107,6 +104,7 @@ public class Twitter {
         Status stat = twitter.showStatus(tweetid);
         long date = stat.getCreatedAt().getTime();
         LocalDateTime statusDate = new Date(date).toLocalDate().atStartOfDay();
+
         return statusDate;
     }
 
