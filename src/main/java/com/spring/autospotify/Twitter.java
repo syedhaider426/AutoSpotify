@@ -31,33 +31,31 @@ public class Twitter {
     //62786088 - DancingAstro
     //709746338376896513 - Electric Hawk
     public Map<Long, Long> getMentions() throws TwitterException {
-        //key = tweetid
-        //value inreplytostatusid
         Map<Long, Long> tweets = new LinkedHashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
-        long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
+        //709746338376896513L
+        long[] approvedUserIdList = {348768375L, 729066981077311488L, 62786088L};
         Boolean found = false;
         for (Status stat : responseList) {
             Long inReplyToUserId = stat.getInReplyToUserId();
             for (Long approvedUserId : approvedUserIdList) {
                 if (approvedUserId.equals(inReplyToUserId)) {
-                    tweets.put(stat.getInReplyToStatusId(), stat.getId());
-                    found = true;
-                    break;
+                    Status stats = twitter.showStatus(inReplyToUserId);
+                    if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent tweet
+                        tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
+                        found = true;
+                        break;
+                    }
                 }
-            }
-            if(!found) {
-                System.out.println("No matching account made");
-                //replyTweet(stat.getInReplyToStatusId(), "You must call the bot on tweets made by TeamBAndL, RiverBeats1, ElectricHawk, or DancingAstro.");
             }
         }
         return tweets;
     }
 
     public void replyTweet(long inReplyToStatusId, String tweet) throws TwitterException {
-        StatusUpdate status = new StatusUpdate(tweet);
-        System.out.println("inreplytostatusid - " + inReplyToStatusId);
-        status.setInReplyToStatusId(inReplyToStatusId);
+        Status stat = twitter.showStatus(inReplyToStatusId);
+        StatusUpdate status = new StatusUpdate("@" + stat.getUser().getScreenName() + " " + tweet);
+        status.inReplyToStatusId(inReplyToStatusId);
         twitter.updateStatus(status);
     }
 

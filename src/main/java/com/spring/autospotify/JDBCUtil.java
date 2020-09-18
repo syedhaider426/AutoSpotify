@@ -73,43 +73,39 @@ public class JDBCUtil {
         return spotifyId;
     }
 
-    // Creates Tweet_URI table
-    public void createUriTweetTable() throws SQLException {
+    // Creates Playlist_Tweet table
+    public void createPlaylistTweetTable() throws SQLException {
         Connection db = getConnection();
-        String sql = "CREATE TABLE IF NOT EXISTS TWEET_URI (" +
+        String sql = "CREATE TABLE IF NOT EXISTS PLAYLIST_TWEET (" +
                 "TweetId BIGINT," +
-                "SpotifyURI TEXT NOT NULL)";
+                "PlaylistId TEXT NOT NULL)";
         PreparedStatement ps1 = db.prepareStatement(sql);
         ps1.executeUpdate();
-        System.out.println("Created Tweet_Uri Table");
+        System.out.println("Created Playlist_Tweet Table");
     }
 
     // Insert track/album uri and tweet into tweet_track
-    public void insertUriTweet(ArrayList<String> spotifyUriList, Long tweet) throws SQLException {
+    public void insertPlaylist_Tweet(Long tweet,String playlistId) throws SQLException {
         Connection db = getConnection();
-        String sql = "INSERT INTO TWEET_URI (TweetId,SpotifyURI) VALUES (?,?)";
+        String sql = "INSERT INTO PLAYLIST_TWEET (TweetId,PlaylistId) VALUES (?,?)";
         PreparedStatement ps = db.prepareStatement(sql);
-        for (int x = 0; x < spotifyUriList.size(); x++) {
-            ps.setLong(1, tweet);
-            ps.setString(2, spotifyUriList.get(x));
-            ps.addBatch();
-        }
-        ps.executeBatch();
-        System.out.println("Successfully added songs to db");
+        ps.setLong(1, tweet);
+        ps.setString(2, playlistId);
+        ps.executeUpdate();
+        System.out.println("Successfully added playlist to db");
     }
 
     // If the tweet exists, get track associated with it
-    public ArrayList<String> getTracks(Long tweetId) throws SQLException {
+    public String getPlaylistId(Long tweetId) throws SQLException {
         Connection db = getConnection();
-        ArrayList<String> tracks = new ArrayList<>();
-        String sql = "SELECT SpotifyURI FROM TWEET_URI WHERE TweetId = ?";
+        String sql = "SELECT PlaylistId FROM PLAYLIST_TWEET WHERE TweetId = ?";
         PreparedStatement ps = db.prepareStatement(sql);
         ps.setLong(1, tweetId);
         ResultSet result = ps.executeQuery();
-        while (result.next()) {
-            tracks.add(result.getString(1));
+        if (result.next()) {
+            return result.getString(1);
         }
-        return tracks;
+        return "";
     }
 
     public void insertSinceId(long since_id) {

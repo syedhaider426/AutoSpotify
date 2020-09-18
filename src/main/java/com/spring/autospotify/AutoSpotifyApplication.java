@@ -22,7 +22,7 @@ public class AutoSpotifyApplication {
         // Initialize the database
         JDBCUtil db = JDBCUtil.getInstance();
         db.createArtistTable();
-        db.createUriTweetTable();
+        db.createPlaylistTweetTable();
 
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
@@ -34,27 +34,15 @@ public class AutoSpotifyApplication {
             return;
         }
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
-
             Long tweetid = entry.getKey();
             Long inReplyToStatusId = entry.getValue();
             // If tweet exists, get track associated with it
-            ArrayList<String> uriList = db.getTracks(tweetid);
-            if (uriList.size() > 0) {
-                System.out.println("Found Tweet in database");
-                Boolean songsAdded = false;
-                String playlistId = "19Cg0aKbM7UtUfdx873CEA";
-                songsAdded = spotify.addSongsToPlaylist(playlistId, uriList);
-                if (songsAdded) {
-                    System.out.println("Songs were added successfully");
-                    //twitter.replyTweet(inReplyToStatusId, "Playlist is here at https://open.spotify.com/playlist/" + playlistId);
-                    continue;
-                } else {
-                    System.out.println("ERROR. Songs not added");
-                    //twitter.replyTweet(inReplyToStatusId, "Unable to add songs to playlist. Please try again later.");
-                    continue;
-                }
-            }
-
+            String playlistId = db.getPlaylistId(tweetid);
+            if (playlistId.length() > 0) {
+                System.out.println("Found the playlist link");
+                twitter.replyTweet(inReplyToStatusId, "Poggers, this tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
+                break;
+            }/*
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetid);
             if (artists.size() < 2) {
@@ -84,25 +72,21 @@ public class AutoSpotifyApplication {
                 continue;
             }
 
-            // Store list of new tracks and the tweet they are related to
-            db.insertUriTweet(releases, tweetid);
-
             DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-            String playlistId = spotify.createPlaylist("shayder426", "New Music for " + tweetDate.toLocalDate().format(format));
-            System.out.println("NEW PLAYLIST");
-            System.out.println(tweetDate.toLocalDate().format(format));
+            String newPlaylistId = spotify.createPlaylist("shayder426", "New Music for " + tweetDate.toLocalDate().format(format));
+            // Store list of new tracks and the tweet they are related to
+            db.insertPlaylist_Tweet(tweetid, newPlaylistId);
             // Add songs to playlist
             Boolean songsAdded = false;
-            songsAdded = spotify.addSongsToPlaylist(playlistId, releases);
+            songsAdded = spotify.addSongsToPlaylist(newPlaylistId, releases);
             if (songsAdded) {
                 System.out.println("Songs were added successfully");
-                //twitter.replyTweet(tweetid,"Poggers. This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId );
+                twitter.replyTweet(inReplyToStatusId,"Poggers. This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + newPlaylistId );
             } else {
                 System.out.println("ERROR. Songs not added");
-                //twitter.replyTweet(tweetid,"Unable to add songs to playlist. Please try again later.");
-            }
-            spotify.setToken();
-            break;
+                twitter.replyTweet(inReplyToStatusId,"Unable to add songs to playlist. Please try again later.");
+          }*/
+
         }
 
     }
