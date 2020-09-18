@@ -46,6 +46,7 @@ public class JDBCUtil {
         PreparedStatement ps1 = db.prepareStatement(sql1);
         ps1.executeUpdate();
         System.out.println("Created Artist Table");
+        db.close();
     }
 
     // Insert Artist into Artist table
@@ -57,6 +58,7 @@ public class JDBCUtil {
         ps.setString(1, artist);
         ps.setString(2, spotifyID);
         ps.executeUpdate();
+        db.close();
     }
 
     // Get spotify id of an artist
@@ -70,6 +72,7 @@ public class JDBCUtil {
         while (result.next()) {
             spotifyId = result.getString("SpotifyID");
         }
+        db.close();
         return spotifyId;
     }
 
@@ -82,6 +85,7 @@ public class JDBCUtil {
         PreparedStatement ps1 = db.prepareStatement(sql);
         ps1.executeUpdate();
         System.out.println("Created Playlist_Tweet Table");
+        db.close();
     }
 
     // Insert track/album uri and tweet into tweet_track
@@ -93,7 +97,10 @@ public class JDBCUtil {
         ps.setString(2, playlistId);
         ps.executeUpdate();
         System.out.println("Successfully added playlist to db");
+        db.close();
     }
+
+
 
     // If the tweet exists, get track associated with it
     public String getPlaylistId(Long tweetId) throws SQLException {
@@ -102,14 +109,38 @@ public class JDBCUtil {
         PreparedStatement ps = db.prepareStatement(sql);
         ps.setLong(1, tweetId);
         ResultSet result = ps.executeQuery();
+        db.close();
         if (result.next()) {
             return result.getString(1);
         }
         return "";
     }
 
+    // Creates Since_Id table
+    public void createSinceIdTable() throws SQLException {
+        Connection db = getConnection();
+        String sql = "CREATE TABLE IF NOT EXISTS SINCE_ID (" +
+                "SinceId BIGINT NOT NULL, " +
+                "PRIMARY KEY (SinceId) " +
+                ")";
+        PreparedStatement ps1 = db.prepareStatement(sql);
+        ps1.executeUpdate();
+        System.out.println("Created Since_Id Table");
+        db.close();
+    }
+
     public void insertSinceId(long since_id) {
-        String sql = "INSERT";
+        try {
+            Connection db = getConnection();
+            String sql = "INSERT INTO SINCE_ID (SinceId) VALUES (?) ON CONFLICT ON CONSTRAINT since_id_pkey " +
+                    "DO UPDATE SET since_id = ?";
+            PreparedStatement ps = db.prepareStatement(sql);
+            ps.setLong(1,since_id);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
     }
 
 

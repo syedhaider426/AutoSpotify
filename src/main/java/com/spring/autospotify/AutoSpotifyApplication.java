@@ -23,7 +23,7 @@ public class AutoSpotifyApplication {
         JDBCUtil db = JDBCUtil.getInstance();
         db.createArtistTable();
         db.createPlaylistTweetTable();
-
+        db.createSinceIdTable();
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
         Twitter twitter = new Twitter();
@@ -35,14 +35,15 @@ public class AutoSpotifyApplication {
         }
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
             Long tweetid = entry.getKey();
+            System.out.println("Statusid: " + tweetid);
             Long inReplyToStatusId = entry.getValue();
             // If tweet exists, get track associated with it
             String playlistId = db.getPlaylistId(tweetid);
             if (playlistId.length() > 0) {
                 System.out.println("Found the playlist link");
                 twitter.replyTweet(inReplyToStatusId, "Poggers, this tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
-                break;
-            }/*
+                continue;
+            }
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetid);
             if (artists.size() < 2) {
@@ -85,7 +86,7 @@ public class AutoSpotifyApplication {
             } else {
                 System.out.println("ERROR. Songs not added");
                 twitter.replyTweet(inReplyToStatusId,"Unable to add songs to playlist. Please try again later.");
-          }*/
+          }
 
         }
 

@@ -34,13 +34,14 @@ public class Twitter {
         Map<Long, Long> tweets = new LinkedHashMap<>();
         ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
         //709746338376896513L
-        long[] approvedUserIdList = {348768375L, 729066981077311488L, 62786088L};
+        long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
+        //long[] approvedUserIdList = {709746338376896513L};
         Boolean found = false;
         for (Status stat : responseList) {
             Long inReplyToUserId = stat.getInReplyToUserId();
             for (Long approvedUserId : approvedUserIdList) {
                 if (approvedUserId.equals(inReplyToUserId)) {
-                    Status stats = twitter.showStatus(inReplyToUserId);
+                    Status stats = twitter.showStatus(stat.getInReplyToStatusId());
                     if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent tweet
                         tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
                         found = true;
