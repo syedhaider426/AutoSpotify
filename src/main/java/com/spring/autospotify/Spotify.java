@@ -50,8 +50,7 @@ public class Spotify {
 
 
     // Search artist will do an api call, verify the artist exists in Spotify, and return spotifyid back
-    public ArrayList<String> searchArtist(ArrayList<String> artistList) throws
-            SQLException {
+    public ArrayList<String> searchArtist(ArrayList<String> artistList) {
         System.out.println("Searching artists");
         ArrayList<String> artists = new ArrayList<>();
         String spotifyId;

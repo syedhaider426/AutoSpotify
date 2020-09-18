@@ -35,7 +35,7 @@ public class JDBCUtil {
 
 
     // Create Artist Table
-    public void createArtistTable() throws SQLException {
+    public void createArtistTable() {
         String sql = "CREATE TABLE IF NOT EXISTS ARTIST" +
                 "(" +
                 "Artist TEXT," +
@@ -54,7 +54,7 @@ public class JDBCUtil {
     }
 
     // Insert Artist into Artist table
-    public void insertArtist(String artist, String spotifyID) throws SQLException {
+    public void insertArtist(String artist, String spotifyID) {
         String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?) ON CONFLICT ON CONSTRAINT artist_pkey " +
                 "DO NOTHING";
         try (
@@ -92,7 +92,7 @@ public class JDBCUtil {
     }
 
     // Creates Playlist_Tweet table
-    public void createPlaylistTweetTable() throws SQLException {
+    public void createPlaylistTweetTable() {
         String sql = "CREATE TABLE IF NOT EXISTS PLAYLIST_TWEET (" +
                 "TweetId BIGINT," +
                 "PlaylistId TEXT NOT NULL)";
@@ -125,7 +125,7 @@ public class JDBCUtil {
 
 
     // If the tweet exists, get track associated with it
-    public String getPlaylistId(Long tweetId) throws SQLException {
+    public String getPlaylistId(Long tweetId) {
         String sql = "SELECT PlaylistId FROM PLAYLIST_TWEET WHERE TweetId = ?";
         try (
                 Connection db = getConnection();
