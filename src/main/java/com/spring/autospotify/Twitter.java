@@ -29,6 +29,9 @@ public class Twitter {
     //729066981077311488 - RiverBeats1
     //62786088 - DancingAstro
     //709746338376896513 - Electric Hawk
+
+    //Get the mentions for autospotify426 and checks to see if the account that
+    //mentioned the bot, is doing so in a response to a tweet from one of the 4 listed accounts
     public Map<Long, Long> getMentions() {
         Map<Long, Long> tweets = new LinkedHashMap<>();
         try {
@@ -55,6 +58,7 @@ public class Twitter {
         return tweets;
     }
 
+    // Replies to user's tweet based on statusid with specific tweet in params
     public void replyTweet(long inReplyToStatusId, String tweet) {
         try {
             Status stat = twitter.showStatus(inReplyToStatusId);
@@ -71,14 +75,17 @@ public class Twitter {
     public ArrayList<String> getArtists(long tweetid) {
         ArrayList<String> artistList = new ArrayList<>();
         try {
-            String[] tempArtists;
+            String[] tempArtists;   // Used to keep tracks of artists in tweet that have an X, +, or [R]
             String status = twitter.showStatus(tweetid).getText();
             String[] artists = status.split("\n");
             String[] artistsWithX = {"BONNIE X CLYDE", "LIL NAS X", "SOB X RBE"};
             int artistsLength = artists.length;
+            // Start at index 2 because first two lines are usually "New Music" and a blank separator line
             for (int x = 2; x < artistsLength; x++) {
                 tempArtists = null;
                 String artist = artists[x].toUpperCase();
+                // Sanitize data based off if they contain +, ' x ', or [R]
+                // If none, just use the artist name
                 if (artist.contains("+")) {
                     tempArtists = artist.split("\\+");
                     for (String tempArtist : tempArtists) {
@@ -100,8 +107,6 @@ public class Twitter {
                 } else  // This occurs when all artists have been parsed and there is an empty line afterwards
                     break;
             }
-            // When parsing, need to start from index of 2
-
             return artistList;
         } catch (TwitterException ex) {
             ex.printStackTrace();

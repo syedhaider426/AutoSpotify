@@ -69,7 +69,7 @@ public class AutoSpotifyApplication {
                 continue;
             }
 
-            // Get each track to be added to Spotify
+            // Get each track from album releases and that will be added to the playlist
             ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
             if (artistIdList.size() <= 0) {
                 System.out.println("Tracks for the requested albums were not found");
@@ -78,6 +78,7 @@ public class AutoSpotifyApplication {
 
             DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             String newPlaylistId = spotify.createPlaylist("shayder426", "New Music for " + tweetDate.toLocalDate().format(format));
+
             // Store playlist and the tweet they are related to
             db.insertPlaylist_Tweet(tweetid, newPlaylistId);
 
