@@ -146,8 +146,8 @@ public class JDBCUtil {
     // Creates Since_Id table
     public void createSinceIdTable() {
         String sql = "CREATE TABLE IF NOT EXISTS SINCE_ID (" +
-                "SinceId BIGINT NOT NULL, " +
-                "PRIMARY KEY (SinceId) " +
+                "since_id BIGINT NOT NULL, " +
+                "PRIMARY KEY (since_id) " +
                 ")";
         try (
                 Connection db = getConnection();
@@ -161,16 +161,35 @@ public class JDBCUtil {
     }
 
     public void insertSinceId(long since_id) {
-        String sql = "INSERT INTO SINCE_ID (SinceId) VALUES (?) ON CONFLICT ON CONSTRAINT since_id_pkey " +
+        String sql = "INSERT INTO SINCE_ID (since_id) VALUES (?) ON CONFLICT ON CONSTRAINT since_id_pkey " +
                 "DO UPDATE SET since_id = ?";
         try (
                 Connection db = getConnection();
                 PreparedStatement ps = db.prepareStatement(sql);
         ) {
             ps.setLong(1, since_id);
+            ps.setLong(2, since_id);
             ps.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public long getSinceId(){
+        String sql = "SELECT since_id FROM SINCE_ID";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps = db.prepareStatement(sql);
+        ) {
+            //ps.setLong(1, since_id);
+            try(ResultSet resultSet = ps.executeQuery();){
+                if(resultSet.next()){
+                    return resultSet.getLong(1);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        };
+        return 1L;
     }
 }

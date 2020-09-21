@@ -32,14 +32,22 @@ public class Twitter {
 
     //Get the mentions for autospotify426 and checks to see if the account that
     //mentioned the bot, is doing so in a response to a tweet from one of the 4 listed accounts
-    public Map<Long, Long> getMentions() {
+    public Map<Long, Long> getMentions(long since_id) {
         Map<Long, Long> tweets = new LinkedHashMap<>();
         try {
-            ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline();
+            ResponseList<Status> responseList;
+            Paging sinceId;
+            if(since_id != 1L){
+                sinceId = new Paging(since_id);
+                responseList = twitter.timelines().getMentionsTimeline(sinceId);
+            }
+            else
+                responseList = twitter.timelines().getMentionsTimeline();
             long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
             Boolean found = false;
             for (Status stat : responseList) {
                 Long inReplyToUserId = stat.getInReplyToUserId();
+                System.out.println("Status Id: " + stat.getId());
                 for (Long approvedUserId : approvedUserIdList) {
                     if (approvedUserId.equals(inReplyToUserId)) {
                         Status stats = twitter.showStatus(stat.getInReplyToStatusId());

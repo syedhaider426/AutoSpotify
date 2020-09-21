@@ -28,7 +28,11 @@ public class AutoSpotifyApplication {
         Twitter twitter = new Twitter();
 
         //key = tweetid, value = inreplytostatusid
-        Map<Long, Long> tweetIdList = twitter.getMentions();
+        long since_id = db.getSinceId();
+        Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
+        if(since_id == 1L) { // Only used on initialization
+            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0]));
+        }
         if (tweetIdList.size() < 0) {
             System.out.println("No mentions found");
             return;
