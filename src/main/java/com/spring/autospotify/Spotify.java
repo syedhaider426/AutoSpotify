@@ -61,7 +61,7 @@ public class Spotify {
                 continue;
             }
             this.spotifyApi = setToken();
-            //System.out.println("Checking artist: " + artist);
+            System.out.println("Checking artist: " + artist);
             SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(artist).limit(10).build();
             try {
                 final Paging<Artist> artistPaging = searchArtistsRequest.execute();

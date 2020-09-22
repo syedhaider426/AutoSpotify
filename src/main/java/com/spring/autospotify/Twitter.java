@@ -37,11 +37,10 @@ public class Twitter {
         try {
             ResponseList<Status> responseList;
             Paging sinceId;
-            if(since_id != 1L){
+            if (since_id != 1L) {
                 sinceId = new Paging(since_id);
                 responseList = twitter.timelines().getMentionsTimeline(sinceId);
-            }
-            else
+            } else
                 responseList = twitter.timelines().getMentionsTimeline();
             long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
             Boolean found = false;
@@ -58,6 +57,9 @@ public class Twitter {
                         }
                     }
                 }
+                if (!found)
+                    replyTweet(stat.getId(), "Please reference the accounts that the bot can be used with in my bio.");
+
             }
             return tweets;
         } catch (TwitterException ex) {
@@ -65,6 +67,7 @@ public class Twitter {
         }
         return tweets;
     }
+
 
     // Replies to user's tweet based on statusid with specific tweet in params
     public void replyTweet(long inReplyToStatusId, String tweet) {
@@ -83,7 +86,7 @@ public class Twitter {
     public ArrayList<String> getArtists(long tweetid) {
         ArrayList<String> artistList = new ArrayList<>();
         try {
-            String[] tempArtists;   // Used to keep tracks of artists in tweet that have an X, +, or [R]
+            String[] tempArtists;   // Used to keep tracks of artists in tweet that have an X, +, [R], or FT.
             String status = twitter.showStatus(tweetid).getText();
             String[] artists = status.split("\n");
             String[] artistsWithX = {"BONNIE X CLYDE", "LIL NAS X", "SOB X RBE"};
@@ -92,7 +95,7 @@ public class Twitter {
             for (int x = 2; x < artistsLength; x++) {
                 tempArtists = null;
                 String artist = artists[x].toUpperCase();
-                // Sanitize data based off if they contain +, ' x ', or [R]
+                // Sanitize data based off if they contain +, ' x ', [R], or FT.
                 // If none, just use the artist name
                 if (artist.contains("+")) {
                     tempArtists = artist.split("\\+");
@@ -110,9 +113,15 @@ public class Twitter {
                         artistList.add(tempArtist.trim());
                         break;  //Only get the first artist
                     }
+                } else if (artist.contains("FT.")) {
+                    tempArtists = artist.split("FT.");
+                    for (String tempArtist : tempArtists) {
+                        artistList.add(tempArtist.trim());
+                        break;  //Only get the first artist
+                    }
                 } else if (artist.length() > 1) {
                     artistList.add(artist);
-                } else  // This occurs when all artists have been parsed and there is an empty line afterwards
+                } else // This occurs when all artists have been parsed and there is an empty line afterwards
                     break;
             }
             return artistList;
@@ -122,18 +131,21 @@ public class Twitter {
         return artistList;
     }
 
+
     // Get the date of the tweet
-    public LocalDateTime getStatusDate(long tweetid) {
+    public Map<String, LocalDateTime> getTweetDetails(long tweetid) {
         LocalDateTime statusDate = null;
+        Map<String, LocalDateTime> map = new HashMap<>();
         try {
             Status stat = twitter.showStatus(tweetid);
             long date = stat.getCreatedAt().getTime();
             statusDate = new Date(date).toLocalDate().atStartOfDay();
-            return statusDate;
+            map.put(stat.getUser().getScreenName(), statusDate);
+            return map;
         } catch (TwitterException ex) {
             ex.printStackTrace();
         }
-        return statusDate;
+        return map;
     }
 
 

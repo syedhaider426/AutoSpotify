@@ -62,3 +62,8 @@ src/main/resources/secrets.properties
 *.properties
 src/main/resources/secrets.properties
 src/main/resources/logback.xml
+bin/pom.xml
+bin/mvnw
+bin/README.md
+bin/mvnw.cmd
+bin/src/main/resources/logback.xml

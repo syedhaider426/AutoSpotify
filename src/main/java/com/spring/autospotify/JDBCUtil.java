@@ -1,7 +1,8 @@
 package com.spring.autospotify;
 
+import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.Properties;
 
 public class JDBCUtil {
     private static String url;
@@ -12,8 +13,15 @@ public class JDBCUtil {
 
     // JDBCUtil prevents instantiation from any other class
     private JDBCUtil() {
-        this.url = "jdbc:postgresql://localhost:5433/postgres";
-        this.driver = "org.postgresql.Driver";
+        try {
+            GetPropertyValues properties = new GetPropertyValues();
+            Properties prop = properties.getPropValues();
+            this.url = "jdbc:postgresql://localhost:5432/postgres";
+            //this.url = "jdbc:postgresql://" + prop.getProperty("url");
+            this.driver = "org.postgresql.Driver";
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static JDBCUtil getInstance() {
@@ -24,10 +32,13 @@ public class JDBCUtil {
 
     public static Connection getConnection() {
         Connection conn = null;
+        Properties prop;
         try {
             Class.forName(driver);
-            conn = DriverManager.getConnection(url, "postgres", "9");
-        } catch (ClassNotFoundException | SQLException ex) {
+            GetPropertyValues properties = new GetPropertyValues();
+            prop = properties.getPropValues();
+            conn = DriverManager.getConnection(url, prop.getProperty("username"), prop.getProperty("password"));
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
             ex.printStackTrace();
         }
         return conn;
@@ -175,21 +186,36 @@ public class JDBCUtil {
         }
     }
 
-    public long getSinceId(){
+    public void updateSinceId(long since_id) {
+        String sql = "UPDATE SINCE_ID SET since_id = ?";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps = db.prepareStatement(sql);
+        ) {
+            ps.setLong(1, since_id);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+    public long getSinceId() {
         String sql = "SELECT since_id FROM SINCE_ID";
         try (
                 Connection db = getConnection();
                 PreparedStatement ps = db.prepareStatement(sql);
         ) {
             //ps.setLong(1, since_id);
-            try(ResultSet resultSet = ps.executeQuery();){
-                if(resultSet.next()){
+            try (ResultSet resultSet = ps.executeQuery();) {
+                if (resultSet.next()) {
                     return resultSet.getLong(1);
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
-        };
+        }
+        ;
         return 1L;
     }
 }
