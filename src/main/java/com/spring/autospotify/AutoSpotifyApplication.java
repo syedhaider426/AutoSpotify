@@ -6,13 +6,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
-
+/**
+ * This application is intended to take a tweet where the autospotify426 bot
+ * is mentioned and generate a Spotify playlist from the artists listed in the tweet and
+ * get the tracks released during the week of the tweet .
+ */
 public class AutoSpotifyApplication {
 
     public static void main(String[] args) throws IOException {
 
         // Initialize the database
-        JDBCUtil db = JDBCUtil.getInstance();
+        JDBCUtil db = new JDBCUtil();
         db.createArtistTable();
         db.createPlaylistTweetTable();
         db.createSinceIdTable();
@@ -23,7 +27,7 @@ public class AutoSpotifyApplication {
         // Create instance of Twitter
         Twitter twitter = new Twitter();
 
-        // Get the most recent mentions of bot
+        // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
         long since_id = db.getSinceId();
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
         if (tweetIdList.size() == 0) {
@@ -97,8 +101,10 @@ public class AutoSpotifyApplication {
 
             // Create playlist
             String newPlaylistId = spotify.createPlaylist(userid, playlistName);
-            if (newPlaylistId == null)
+            if (newPlaylistId == null) {
+                twitter.replyTweet(inReplyToStatusId, "Issue creating playlist. Please try again later.");
                 continue;
+            }
             // Store playlist and the tweet they are related to
             db.insertPlaylist_Tweet(tweetid, newPlaylistId);
 
