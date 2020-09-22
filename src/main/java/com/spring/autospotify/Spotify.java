@@ -18,7 +18,6 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

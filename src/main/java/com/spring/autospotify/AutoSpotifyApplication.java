@@ -1,7 +1,5 @@
 package com.spring.autospotify;
 
-import org.apache.tomcat.jni.Local;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,14 +26,14 @@ public class AutoSpotifyApplication {
         // Get the most recent mentions of bot
         long since_id = db.getSinceId();
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
-        if(since_id == 1L)
-            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); // no since_id - occurs when only once, when program is run for the first time ever
-        else
-            db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
         if (tweetIdList.size() == 0) {
             System.out.println("No mentions found");
             return;
         }
+        if (since_id == 1L)
+            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); // no since_id - occurs when only once, when program is run for the first time ever
+        else
+            db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
 
         // Loop through tweets and generate playlist per tweet
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
@@ -99,7 +97,7 @@ public class AutoSpotifyApplication {
 
             // Create playlist
             String newPlaylistId = spotify.createPlaylist(userid, playlistName);
-            if(newPlaylistId == null)
+            if (newPlaylistId == null)
                 continue;
             // Store playlist and the tweet they are related to
             db.insertPlaylist_Tweet(tweetid, newPlaylistId);

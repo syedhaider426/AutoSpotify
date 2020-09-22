@@ -117,7 +117,6 @@ public class Twitter {
                     tempArtists = artist.split("FT.");
                     for (String tempArtist : tempArtists) {
                         artistList.add(tempArtist.trim());
-                        break;  //Only get the first artist
                     }
                 } else if (artist.length() > 1) {
                     artistList.add(artist);
