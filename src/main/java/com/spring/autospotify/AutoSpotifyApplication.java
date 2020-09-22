@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class AutoSpotifyApplication {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         // Initialize the database
         JDBCUtil db = new JDBCUtil();
