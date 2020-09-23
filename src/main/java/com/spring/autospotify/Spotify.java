@@ -71,7 +71,6 @@ public class Spotify {
             }
             // Sets access token for Spotify object
             this.spotifyApi = setToken();
-            System.out.println("Checking artist: " + artist);
 
             // Builds request to search for artist based on artist name
             SearchArtistsRequest searchArtistsRequest = spotifyApi.searchArtists(artist).limit(10).build();
@@ -161,6 +160,7 @@ public class Spotify {
                 }
                 // If song was found, go to next artist
                 if (found) {
+                    System.out.println("Found song");
                     continue;
                 }
                 // If song was not found in the first 50 songs, check the next 50 songs
@@ -250,7 +250,7 @@ public class Spotify {
      * @param inReplyToStatusId status to reply to
      * @param twitter           twitter object
      */
-    public void addSongsToPlaylist(Twitter twitter, long inReplyToStatusId, String playlistId, ArrayList<String> uris) {
+    public void addTracksToPlaylist(Twitter twitter, long inReplyToStatusId, String playlistId, ArrayList<String> uris) {
         String[] uriArray = uris.toArray(new String[0]);
         try {
             // OAuth token is needed to add songs to user's playlist

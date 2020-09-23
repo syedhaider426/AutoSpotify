@@ -9,8 +9,8 @@ import java.util.Map;
 
 /**
  * This application is intended to take a tweet where the autospotify426 bot
- * is mentioned and generate a Spotify playlist from the artists listed in the tweet and
- * get the tracks released during the week of the tweet .
+ * is mentioned and generate a Spotify playlist from the artists listed in the tweet,
+ * getting the tracks released during the week of the tweet .
  */
 public class AutoSpotifyApplication {
 
@@ -23,7 +23,7 @@ public class AutoSpotifyApplication {
 //        db.createArtistTable();
 //        db.createPlaylistTweetTable();
 //        db.createSinceIdTable();
-
+//        db.createFutureTweetTable();
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
 
@@ -33,7 +33,6 @@ public class AutoSpotifyApplication {
         Map<Long, Long> futureTweets = null;
         if (LocalDate.now().getDayOfWeek().getValue() == DayOfWeek.FRIDAY.getValue()) {
             futureTweets = db.getFutureTweets();
-            System.out.println("Processing future tweets");
         }
 
         // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
@@ -41,7 +40,7 @@ public class AutoSpotifyApplication {
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
 
         // If there are any tweets stored in future_tweet that can be processed, add to list
-        if (futureTweets.size() > 0) {
+        if (futureTweets != null && futureTweets.size() > 0) {
             for (Map.Entry<Long, Long> entry : futureTweets.entrySet()) {
                 tweetIdList.put(entry.getKey(), entry.getValue());
             }
@@ -56,17 +55,17 @@ public class AutoSpotifyApplication {
 
         // Loop through tweets and generate playlist per tweet
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
-            Long tweetid = entry.getKey();
+            Long tweetId = entry.getKey();
             Long inReplyToStatusId = entry.getValue();
 
 
             // Get tweet details - User and Tweet Date
-            Map<String, LocalDateTime> map = twitter.getTweetDetails(tweetid);
+            Map<String, LocalDateTime> map = twitter.getTweetDetails(tweetId);
             Map.Entry<String, LocalDateTime> entry2 = map.entrySet().iterator().next();
             String user = entry2.getKey(); // author
             LocalDateTime tweetDate = entry2.getValue(); // tweet date
 
-            /* For the week of the tweet was posted at, the Friday must come after the current date to be processed
+            /* For the week of the tweet was posted at, the Friday must come before the current date to be processed
              * Else, it will be processed on the next upcoming Friday
              */
             LocalDate tweetStartDate = tweetDate.toLocalDate();
@@ -76,13 +75,13 @@ public class AutoSpotifyApplication {
             LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
             if (tweetEndDate.isAfter(LocalDate.now())) {
                 System.out.println("This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
-                db.insertFutureTweet(tweetid, inReplyToStatusId);
+                db.insertFutureTweet(tweetId, inReplyToStatusId);
                 twitter.replyTweet(inReplyToStatusId, "This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
                 continue;
             }
 
             // If tweet exists, get track associated with it
-            String playlistId = db.getPlaylistId(tweetid);
+            String playlistId = db.getPlaylistId(tweetId);
             if (playlistId.length() > 0) {
                 System.out.println("Found the playlist link");
                 twitter.replyTweet(inReplyToStatusId, "Poggers, this tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
@@ -90,7 +89,7 @@ public class AutoSpotifyApplication {
             }
 
             // Gets tweet and parses it
-            ArrayList<String> artists = twitter.getArtists(tweetid);
+            ArrayList<String> artists = twitter.getArtists(tweetId);
             if (artists.size() < 6) {
                 System.out.println("No artists found");
                 twitter.replyTweet(inReplyToStatusId, "There needs to be at least 6 artists in the tweet for playlist to be created.");
@@ -116,7 +115,7 @@ public class AutoSpotifyApplication {
             }
 
             // Get each track from album releases and that will be added to the playlist
-            ArrayList<String> releases = spotify.getAlbumTracks(albumReleases);
+            ArrayList<String> tracks = spotify.getAlbumTracks(albumReleases);
             if (artistIdList.size() <= 0) {
                 System.out.println("Tracks for the requested albums were not found");
                 twitter.replyTweet(inReplyToStatusId, "Spotify had an issue finding music for the artists listed.");
@@ -136,13 +135,12 @@ public class AutoSpotifyApplication {
                 twitter.replyTweet(inReplyToStatusId, "Issue creating playlist. Please try again later.");
                 continue;
             }
+
             // Store playlist and the tweet they are related to
-            db.insertPlaylist_Tweet(tweetid, newPlaylistId);
+            db.insertPlaylist_Tweet(tweetId, newPlaylistId);
 
-            // Add songs to playlist
-            spotify.addSongsToPlaylist(twitter, inReplyToStatusId, newPlaylistId, releases);
-
+            // Add tracks to playlist
+            spotify.addTracksToPlaylist(twitter, inReplyToStatusId, newPlaylistId, tracks);
         }
     }
-
 }
