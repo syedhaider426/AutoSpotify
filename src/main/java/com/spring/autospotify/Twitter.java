@@ -12,12 +12,13 @@ import java.util.*;
  * This class is primarily used to get the bot mentions, parse the tweets, and reply to tweets
  */
 public class Twitter {
-    private twitter4j.Twitter twitter;
+    private static twitter4j.Twitter twitter;
+    private static JDBCUtil db;
 
     /**
      * Constructor for Twitter object
      */
-    public Twitter() {
+    public Twitter(JDBCUtil db) {
         try {
             GetPropertyValues properties = new GetPropertyValues();
             Properties prop = properties.getPropValues();
@@ -29,7 +30,8 @@ public class Twitter {
                     .setOAuthAccessToken(prop.getProperty("accessToken"))
                     .setOAuthAccessTokenSecret(prop.getProperty("accessTokenSecret"));
             TwitterFactory tf = new TwitterFactory(cb.build());
-            this.twitter = tf.getInstance();
+            twitter = tf.getInstance();
+            db = db;
         }
         catch(IOException ex){
             ex.printStackTrace();
@@ -59,6 +61,7 @@ public class Twitter {
                 responseList = twitter.timelines().getMentionsTimeline();
             long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
             boolean found = false;
+            db.updateSinceId(responseList.get(0).getInReplyToStatusId());
             for (Status stat : responseList) {
                 Long inReplyToUserId = stat.getInReplyToUserId();
                 System.out.println("Status Id: " + stat.getId());

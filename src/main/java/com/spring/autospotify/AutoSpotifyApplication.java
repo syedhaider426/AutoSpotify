@@ -28,10 +28,10 @@ public class AutoSpotifyApplication {
         Spotify spotify = new Spotify(db);
 
         // Create instance of Twitter
-        Twitter twitter = new Twitter();
+        Twitter twitter = new Twitter(db);
 
-        Map<Long,Long> futureTweets = null;
-        if(LocalDate.now().getDayOfWeek().getValue() == DayOfWeek.FRIDAY.getValue()){
+        Map<Long, Long> futureTweets = null;
+        if (LocalDate.now().getDayOfWeek().getValue() == DayOfWeek.FRIDAY.getValue()) {
             futureTweets = db.getFutureTweets();
             System.out.println("Processing future tweets");
         }
@@ -39,12 +39,20 @@ public class AutoSpotifyApplication {
         // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
         long since_id = db.getSinceId();
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
+
+        // If there are any tweets stored in future_tweet that can be processed, add to list
+        if (futureTweets.size() > 0) {
+            for (Map.Entry<Long, Long> entry : futureTweets.entrySet()) {
+                tweetIdList.put(entry.getKey(), entry.getValue());
+            }
+            db.deleteFutureTweets();
+        }
+
+        // If bot was not mentioned in any tweets, return
         if (tweetIdList.size() == 0) {
             System.out.println("No mentions found");
             return;
         }
-
-        db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
 
         // Loop through tweets and generate playlist per tweet
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
@@ -68,7 +76,7 @@ public class AutoSpotifyApplication {
             LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
             if (tweetEndDate.isAfter(LocalDate.now())) {
                 System.out.println("This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
-                db.insertFutureTweet(tweetid,inReplyToStatusId);
+                db.insertFutureTweet(tweetid, inReplyToStatusId);
                 twitter.replyTweet(inReplyToStatusId, "This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
                 continue;
             }

@@ -305,7 +305,7 @@ public class JDBCUtil {
     /**
      * Delete all tweets in table
      */
-    public void deleteFutureTweet() {
+    public void deleteFutureTweets() {
         String sql = "DELETE FROM FUTURE_TWEET";
         try (
                 Connection db = getConnection();
