@@ -2,6 +2,8 @@ package com.spring.autospotify;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -12,6 +14,7 @@ import java.util.Properties;
 public class JDBCUtil {
     private static String url;
     private static String driver;
+
     /**
      * Constructor for JDBCUtil
      * -Set the connection url and postgresql driver
@@ -30,6 +33,7 @@ public class JDBCUtil {
 
     /**
      * Opens connection to db
+     *
      * @return Connection - connection to the database
      */
     public static Connection getConnection() {
@@ -69,7 +73,8 @@ public class JDBCUtil {
 
     /**
      * Insert artist name and their corresponding spotifyid
-     * @param artist Name of Artist
+     *
+     * @param artist    Name of Artist
      * @param spotifyID ID associated with artist in Spotify
      */
     public void insertArtist(String artist, String spotifyID) {
@@ -90,6 +95,7 @@ public class JDBCUtil {
 
     /**
      * Gets the spotifyid of an artist
+     *
      * @param artist Name of artist
      * @return spotifyid associated with artist if artist exists
      */
@@ -135,7 +141,7 @@ public class JDBCUtil {
      * Stores the tweet id and playlistid to keep track of in case
      * other users request bot on same tweet
      *
-     * @param tweet id of tweet that was processed
+     * @param tweet      id of tweet that was processed
      * @param playlistId playlistId that was created via Spotify Api
      */
     public void insertPlaylist_Tweet(Long tweet, String playlistId) {
@@ -199,6 +205,7 @@ public class JDBCUtil {
 
     /**
      * Insert the id of the newest tweet from getMentionsTimeline endpoint into table. This only occurs once.
+     *
      * @param since_id id of the newest tweet from getMentionsTimeline endpoint
      */
     public void insertSinceId(long since_id) {
@@ -216,6 +223,7 @@ public class JDBCUtil {
 
     /**
      * Update the since_id
+     *
      * @param since_id id of the newest tweet from getMentionsTimeline endpoint
      */
     public void updateSinceId(long since_id) {
@@ -233,6 +241,7 @@ public class JDBCUtil {
 
     /**
      * Get the since_id
+     *
      * @return since_id which is used to get the tweets greater than the since_id
      * (since_id is updated to the highest id from the getMentionsTimeline endpoint)
      */
@@ -252,4 +261,86 @@ public class JDBCUtil {
         }
         return 1L;
     }
+
+
+    /**
+     * Creates the future_tweet table
+     */
+    public void createFutureTweetTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS FUTURE_TWEET (" +
+                "tweet_id BIGINT NOT NULL, " +
+                "PRIMARY KEY (tweet_id) " +
+                ")";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps1 = db.prepareStatement(sql)
+        ) {
+            ps1.executeUpdate();
+            System.out.println("Created Future Tweet Table");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Insert the id of the tweet from getMentionsTimeline endpoint into table.
+     *
+     * @param tweetId           id of the tweet from getMentionsTimeline endpoint that needs to be processed on a Friday
+     * @param inReplyToStatusId id of the tweet from getMentionsTimeline endpoint that needs to be responded to
+     */
+    public void insertFutureTweet(long tweetId, long inReplyToStatusId) {
+        String sql = "INSERT INTO FUTURE_TWEET (tweet_id, inReplyToStatusId) VALUES (?)";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps = db.prepareStatement(sql)
+        ) {
+            ps.setLong(1, tweetId);
+            ps.setLong(2, inReplyToStatusId);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Delete all tweets in table
+     */
+    public void deleteFutureTweet() {
+        String sql = "DELETE FROM FUTURE_TWEET";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps = db.prepareStatement(sql)
+        ) {
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Gets the tweets that need to be processed on Friday
+     *
+     * @return map of future tweets to be processed
+     */
+    public Map<Long, Long> getFutureTweets() {
+        Map<Long, Long> tweets = new LinkedHashMap<>();
+        String sql = "SELECT tweet_id FROM FUTURE_TWEET";
+        try (
+                Connection db = getConnection();
+                PreparedStatement ps = db.prepareStatement(sql)
+        ) {
+            try (ResultSet result = ps.executeQuery()) {
+                while (result.next()) {
+                    tweets.put(result.getLong(1), result.getLong(2));
+                }
+                return tweets;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return tweets;
+    }
+
+
 }

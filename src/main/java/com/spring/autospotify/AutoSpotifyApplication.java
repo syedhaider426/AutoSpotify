@@ -30,6 +30,12 @@ public class AutoSpotifyApplication {
         // Create instance of Twitter
         Twitter twitter = new Twitter();
 
+        Map<Long,Long> futureTweets = null;
+        if(LocalDate.now().getDayOfWeek().getValue() == DayOfWeek.FRIDAY.getValue()){
+            futureTweets = db.getFutureTweets();
+            System.out.println("Processing future tweets");
+        }
+
         // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
         long since_id = db.getSinceId();
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
@@ -37,8 +43,7 @@ public class AutoSpotifyApplication {
             System.out.println("No mentions found");
             return;
         }
-//        if (since_id == 1L)
-//            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); // no since_id - occurs when only once, when program is run for the first time ever
+
         db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
 
         // Loop through tweets and generate playlist per tweet
@@ -63,6 +68,7 @@ public class AutoSpotifyApplication {
             LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
             if (tweetEndDate.isAfter(LocalDate.now())) {
                 System.out.println("This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
+                db.insertFutureTweet(tweetid,inReplyToStatusId);
                 twitter.replyTweet(inReplyToStatusId, "This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
                 continue;
             }
