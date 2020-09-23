@@ -1,5 +1,7 @@
 package com.spring.autospotify;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -44,6 +46,27 @@ public class AutoSpotifyApplication {
             Long tweetid = entry.getKey();
             Long inReplyToStatusId = entry.getValue();
 
+
+            // Get tweet details - User and Tweet Date
+            Map<String, LocalDateTime> map = twitter.getTweetDetails(tweetid);
+            Map.Entry<String, LocalDateTime> entry2 = map.entrySet().iterator().next();
+            String user = entry2.getKey(); // author
+            LocalDateTime tweetDate = entry2.getValue(); // tweet date
+
+            /* For the week of the tweet was posted at, the Friday must come after the current date to be processed
+             * Else, it will be processed on the next upcoming Friday
+             */
+            LocalDate tweetStartDate = tweetDate.toLocalDate();
+            DayOfWeek dayOfWeek = tweetStartDate.getDayOfWeek(); //starts at 0
+            int fridayValue = DayOfWeek.FRIDAY.getValue();
+            int tweetDateValue = dayOfWeek.getValue();
+            LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
+            if (tweetEndDate.isAfter(LocalDate.now())) {
+                System.out.println("This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
+                twitter.replyTweet(inReplyToStatusId, "This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
+                continue;
+            }
+
             // If tweet exists, get track associated with it
             String playlistId = db.getPlaylistId(tweetid);
             if (playlistId.length() > 0) {
@@ -69,12 +92,6 @@ public class AutoSpotifyApplication {
                 twitter.replyTweet(inReplyToStatusId, "None of the artists in tweet were found on Spotify");
                 continue;
             }
-
-            // Get tweet details - User and Tweet Date
-            Map<String, LocalDateTime> map = twitter.getTweetDetails(tweetid);
-            Map.Entry<String, LocalDateTime> entry2 = map.entrySet().iterator().next();
-            String user = entry2.getKey(); // author
-            LocalDateTime tweetDate = entry2.getValue(); // tweet date
 
             // Get the songs/albums/eps released for the week of the tweet
             ArrayList<String> albumReleases = spotify.getReleases(artistIdList, tweetDate);

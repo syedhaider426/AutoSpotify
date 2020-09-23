@@ -16,7 +16,6 @@ import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchArtistsRequest;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.hc.core5.http.ParseException;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -24,8 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-
-
 /**
  * Spotify class is used to interact with spotify object and methods in order to create a playlist
  * and add songs to the playlist
@@ -56,9 +53,6 @@ public class Spotify {
             ex.printStackTrace();
         }
     }
-
-
-    // Search artist will do an api call, verify the artist exists in Spotify, and return spotifyid back
 
     /**
      * @param artistList List of artist names retrieved from tweet
@@ -223,7 +217,6 @@ public class Spotify {
         }
         return null;
     }
-
 
     /**
      * Create playlist for designated user with designated name

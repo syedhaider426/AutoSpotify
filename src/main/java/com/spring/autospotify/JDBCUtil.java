@@ -12,8 +12,6 @@ import java.util.Properties;
 public class JDBCUtil {
     private static String url;
     private static String driver;
-
-
     /**
      * Constructor for JDBCUtil
      * -Set the connection url and postgresql driver
@@ -29,7 +27,6 @@ public class JDBCUtil {
             ex.printStackTrace();
         }
     }
-
 
     /**
      * Opens connection to db
@@ -48,7 +45,6 @@ public class JDBCUtil {
         }
         return conn;
     }
-
 
     /**
      * Creates the Artist Table
@@ -92,7 +88,6 @@ public class JDBCUtil {
 
     }
 
-
     /**
      * Gets the spotifyid of an artist
      * @param artist Name of artist
@@ -118,7 +113,6 @@ public class JDBCUtil {
         return null;
     }
 
-
     /**
      * Creates the PLAYLIST_TWEET Table
      */
@@ -136,7 +130,6 @@ public class JDBCUtil {
             ex.printStackTrace();
         }
     }
-
 
     /**
      * Stores the tweet id and playlistid to keep track of in case
@@ -205,7 +198,7 @@ public class JDBCUtil {
     }
 
     /**
-     * Insert the id of the newest tweet from getMentionsTimeline endpoint into table.
+     * Insert the id of the newest tweet from getMentionsTimeline endpoint into table. This only occurs once.
      * @param since_id id of the newest tweet from getMentionsTimeline endpoint
      */
     public void insertSinceId(long since_id) {
@@ -237,7 +230,6 @@ public class JDBCUtil {
             ex.printStackTrace();
         }
     }
-
 
     /**
      * Get the since_id

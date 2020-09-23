@@ -99,7 +99,6 @@ public class Twitter {
         }
     }
 
-
     /**
      * Get all the artists that are mentioned in the tweet
      * @param tweetid - id of the tweet that has all the artists
@@ -178,6 +177,4 @@ public class Twitter {
         }
         return map;
     }
-
-
 }
