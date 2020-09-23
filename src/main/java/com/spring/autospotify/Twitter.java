@@ -43,7 +43,7 @@ public class Twitter {
     /**
      * Get the mentions for autospotify426 and checks to see if the account that
      * mentioned the bot, is doing so in a response to a tweet from one of the 4 listed accounts
-     * @param since_id - Get mentions greater than the since_id
+     * @param since_id Get mentions greater than the since_id
      * @return map that contains the tweet to reply to (the parent tweet) and the tweet
      * in which the bot was called
      */
@@ -58,7 +58,7 @@ public class Twitter {
             } else
                 responseList = twitter.timelines().getMentionsTimeline();
             long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
-            Boolean found = false;
+            boolean found = false;
             for (Status stat : responseList) {
                 Long inReplyToUserId = stat.getInReplyToUserId();
                 System.out.println("Status Id: " + stat.getId());
@@ -85,8 +85,8 @@ public class Twitter {
 
     /**
      * Replies to user's tweet based on statusid with specific tweet in params
-     * @param inReplyToStatusId - Tweet to reply to
-     * @param tweet - The content of the tweet
+     * @param inReplyToStatusId Tweet to reply to
+     * @param tweet The content of the tweet
      */
     public void replyTweet(long inReplyToStatusId, String tweet) {
         try {
@@ -123,7 +123,7 @@ public class Twitter {
             int artistsLength = artists.length;
             // Start at index 2 because first two lines are usually "New Music" and a blank separator line
             for (int x = 2; x < artistsLength; x++) {
-                tempArtists = null;
+                tempArtists = null; // clear values in array
                 String artist = artists[x].toUpperCase();
                 // Sanitize data based off if they contain +, ' x ', [R], or FT.
                 // If none, just use the artist name

@@ -1,6 +1,5 @@
 package com.spring.autospotify;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,9 +16,11 @@ public class AutoSpotifyApplication {
 
         // Initialize the database
         JDBCUtil db = new JDBCUtil();
-        db.createArtistTable();
-        db.createPlaylistTweetTable();
-        db.createSinceIdTable();
+
+        // Only needs to run when program is first run
+//        db.createArtistTable();
+//        db.createPlaylistTweetTable();
+//        db.createSinceIdTable();
 
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
@@ -34,10 +35,9 @@ public class AutoSpotifyApplication {
             System.out.println("No mentions found");
             return;
         }
-        if (since_id == 1L)
-            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); // no since_id - occurs when only once, when program is run for the first time ever
-        else
-            db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
+//        if (since_id == 1L)
+//            db.insertSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); // no since_id - occurs when only once, when program is run for the first time ever
+        db.updateSinceId(tweetIdList.get(tweetIdList.keySet().toArray()[0])); //  one since_id exists
 
         // Loop through tweets and generate playlist per tweet
         for (Map.Entry<Long, Long> entry : tweetIdList.entrySet()) {
@@ -109,15 +109,7 @@ public class AutoSpotifyApplication {
             db.insertPlaylist_Tweet(tweetid, newPlaylistId);
 
             // Add songs to playlist
-            Boolean songsAdded = false;
-            songsAdded = spotify.addSongsToPlaylist(newPlaylistId, releases);
-            if (songsAdded) {
-                System.out.println("Songs were added successfully");
-                twitter.replyTweet(inReplyToStatusId, "Poggers. This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + newPlaylistId);
-            } else {
-                System.out.println("ERROR. Songs not added");
-                twitter.replyTweet(inReplyToStatusId, "Unable to add songs to playlist. Please try again later.");
-            }
+            spotify.addSongsToPlaylist(twitter, inReplyToStatusId, newPlaylistId, releases);
 
         }
     }

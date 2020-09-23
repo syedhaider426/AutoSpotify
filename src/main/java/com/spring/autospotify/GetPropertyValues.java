@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Get the secret values stored in properties files\
+ * Get the secret values stored in properties files
  */
 public class GetPropertyValues {
     Properties prop;
@@ -14,8 +14,8 @@ public class GetPropertyValues {
 
     /**
      * Gets the properties created in 'secrets.properties' file
-     * @return - prop: Properties object in which properties from secrets.properties can be used
-     * @throws IOException
+     * @return prop: Properties object in which properties from secrets.properties can be used
+     * @throws IOException - IOException is thrown if error with file occurs
      */
     public Properties getPropValues() throws IOException {
         try {
@@ -35,6 +35,7 @@ public class GetPropertyValues {
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         } finally {
+            assert inputStream != null;
             inputStream.close();
         }
         return prop;

@@ -73,8 +73,8 @@ public class JDBCUtil {
 
     /**
      * Insert artist name and their corresponding spotifyid
-     * @param artist - Name of Artist
-     * @param spotifyID - ID associated with artist in Spotify
+     * @param artist Name of Artist
+     * @param spotifyID ID associated with artist in Spotify
      */
     public void insertArtist(String artist, String spotifyID) {
         String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?) ON CONFLICT ON CONSTRAINT artist_pkey " +
@@ -95,8 +95,8 @@ public class JDBCUtil {
 
     /**
      * Gets the spotifyid of an artist
-     * @param artist - Name of artist
-     * @return - spotifyid associated with artist if artist exists
+     * @param artist Name of artist
+     * @return spotifyid associated with artist if artist exists
      */
     public String getSpotifyID(String artist) {
         String sql = "SELECT SpotifyID FROM ARTIST Where UPPER(ARTIST) = ?";
@@ -142,8 +142,8 @@ public class JDBCUtil {
      * Stores the tweet id and playlistid to keep track of in case
      * other users request bot on same tweet
      *
-     * @param tweet - id of tweet that was processed
-     * @param playlistId - playlistId that was created via Spotify Api
+     * @param tweet id of tweet that was processed
+     * @param playlistId playlistId that was created via Spotify Api
      */
     public void insertPlaylist_Tweet(Long tweet, String playlistId) {
         String sql = "INSERT INTO PLAYLIST_TWEET (TweetId,PlaylistId) VALUES (?,?)";
@@ -164,8 +164,8 @@ public class JDBCUtil {
      * Checks to see if the tweetId passed in exists in playlist_tweet table. If
      * it does, return it.
      *
-     * @param tweetId - id of the tweet that may or may not exist in playlist_tweet
-     * @return playlistid - if tweet exists, return the playlistid
+     * @param tweetId id of the tweet that may or may not exist in playlist_tweet
+     * @return playlistid if tweet exists, return the playlistid
      */
     public String getPlaylistId(Long tweetId) {
         String sql = "SELECT PlaylistId FROM PLAYLIST_TWEET WHERE TweetId = ?";
@@ -206,7 +206,7 @@ public class JDBCUtil {
 
     /**
      * Insert the id of the newest tweet from getMentionsTimeline endpoint into table.
-     * @param since_id - id of the newest tweet from getMentionsTimeline endpoint
+     * @param since_id id of the newest tweet from getMentionsTimeline endpoint
      */
     public void insertSinceId(long since_id) {
         String sql = "INSERT INTO SINCE_ID (since_id) VALUES (?)";
@@ -223,7 +223,7 @@ public class JDBCUtil {
 
     /**
      * Update the since_id
-     * @param since_id - id of the newest tweet from getMentionsTimeline endpoint
+     * @param since_id id of the newest tweet from getMentionsTimeline endpoint
      */
     public void updateSinceId(long since_id) {
         String sql = "UPDATE SINCE_ID SET since_id = ?";
@@ -241,7 +241,7 @@ public class JDBCUtil {
 
     /**
      * Get the since_id
-     * @return - since_id which is used to get the tweets greater than the since_id
+     * @return since_id which is used to get the tweets greater than the since_id
      * (since_id is updated to the highest id from the getMentionsTimeline endpoint)
      */
     public long getSinceId() {
