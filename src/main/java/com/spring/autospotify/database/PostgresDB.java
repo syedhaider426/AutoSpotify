@@ -1,4 +1,6 @@
-package com.spring.autospotify;
+package com.spring.autospotify.database;
+
+import com.spring.autospotify.config.GetPropertyValues;
 
 import java.io.IOException;
 import java.sql.*;
@@ -38,6 +40,14 @@ public class PostgresDB implements Database {
             ex.printStackTrace();
         }
         return conn;
+    }
+
+    @Override
+    public void initialize() {
+        createArtistTable();
+        createFutureTweetTable();
+        createPlaylistTweetTable();
+        createSinceIdTable();
     }
 
     public void createArtistTable() {

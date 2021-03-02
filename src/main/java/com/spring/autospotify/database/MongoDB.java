@@ -1,7 +1,8 @@
-package com.spring.autospotify;
+package com.spring.autospotify.database;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.*;
 import com.mongodb.MongoClientSettings;
+import com.spring.autospotify.config.GetPropertyValues;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -31,41 +32,73 @@ public class MongoDB implements Database {
                 .retryWrites(true)
                 .build();
         mongoClient = MongoClients.create(settings);
-        database = mongoClient.getDatabase("playlistify");
+        database = mongoClient.getDatabase(prop.getProperty("database"));
     }
 
 
-    public void createCollection(String collection) {
-        database.createCollection(collection);
-        MongoCollection<Document> col1 = database.getCollection(collection);
-        System.out.println(col1);
+    @Override
+    public void initialize() {
+        if(database.getCollection("since_id").countDocuments() <= 0) {
+            createArtistTable();
+            createFutureTweetTable();
+            createPlaylistTweetTable();
+            createSinceIdTable();
+        }
     }
 
     @Override
     public void createArtistTable() {
-        createCollection("artist");
+        database.createCollection("artist");
     }
 
     @Override
     public void createPlaylistTweetTable() {
-        createCollection("playlist_tweet");
+        database.createCollection("playlist_tweet");
     }
 
     @Override
     public void createFutureTweetTable() {
-        createCollection("future_tweet");
+        database.createCollection("future_tweet");
     }
 
     @Override
     public void createSinceIdTable() {
-        createCollection("since_id");
+        database.createCollection("since_id");
     }
 
 
     @Override
+    public void insertArtist(String artist, String spotifyID) {
+        MongoCollection<Document> artistCol = database.getCollection("artist");
+        Document doc = artistCol.find(new Document("artist",artist)).first();
+        if(doc != null)
+            return;
+        doc = new Document("artist", artist.toUpperCase())
+                .append("spotifyID", spotifyID);
+        artistCol.insertOne(doc);
+    }
+
+    @Override
+    public void insertPlaylist_Tweet(Long tweet, String playlistId) {
+        MongoCollection<Document> playlistTweetCol = database.getCollection("playlist_tweet");
+        Document document = new Document("tweetId", tweet)
+                .append("playlistId", playlistId);
+        playlistTweetCol.insertOne(document);
+    }
+
+    @Override
+    public void insertSinceId(long since_id) {
+        MongoCollection<Document> sinceIdCol = database.getCollection("since_id");
+        Document document = new Document("since_id", since_id);
+        sinceIdCol.insertOne(document);
+    }
+
+
+
+    @Override
     public String getSpotifyID(String artist) {
-        MongoCollection<Document> col1 = database.getCollection("artist");
-        Document doc = col1.find(new Document("artist",artist.toUpperCase())).first();
+        MongoCollection<Document> artistCol = database.getCollection("artist");
+        Document doc = artistCol.find(new Document("artist",artist.toUpperCase())).first();
         if(doc == null)
             return "";
         return doc.getString("spotifyID");
@@ -74,8 +107,8 @@ public class MongoDB implements Database {
 
     @Override
     public String getPlaylistId(Long tweetId) {
-        MongoCollection<Document> col1 = database.getCollection("playlist_tweet");
-        Document doc = col1.find(new Document("tweetId",tweetId)).first();
+        MongoCollection<Document> playlistTweetCol = database.getCollection("playlist_tweet");
+        Document doc = playlistTweetCol.find(new Document("tweetId",tweetId)).first();
         if(doc == null)
             return "";
         return doc.getString("playlistId");
@@ -83,57 +116,33 @@ public class MongoDB implements Database {
 
 
     @Override
-    public void insertArtist(String artist, String spotifyID) {
-        // Need to add validation for existing artist
-        MongoCollection<Document> col1 = database.getCollection("artist");
-        Document doc = col1.find(new Document("artist",artist)).first();
-        if(doc != null)
-            return;
-        doc = new Document("artist", artist.toUpperCase())
-                .append("spotifyID", spotifyID);
-        col1.insertOne(doc);
-    }
-
-    @Override
-    public void insertPlaylist_Tweet(Long tweet, String playlistId) {
-        // Need to add validation for existing tweet
-        MongoCollection<Document> col1 = database.getCollection("playlist_tweet");
-        Document document = new Document("tweetId", tweet)
-                .append("playlistId", playlistId);
-        col1.insertOne(document);
-    }
-
-    @Override
-    public void insertSinceId(long since_id) {
-        MongoCollection<Document> col1 = database.getCollection("since_id");
-        Document document = new Document("since_id", since_id);
-        col1.insertOne(document);
+    public long getSinceId() {
+        MongoCollection<Document> sinceIdCol = database.getCollection("since_id");
+        Document doc = sinceIdCol.find(new Document()).first();
+        if(doc == null)
+            return -1L;
+        return doc.getLong("since_id");
     }
 
     @Override
     public void updateSinceId(long since_id) {
-        MongoCollection<Document> col1 = database.getCollection("since_id");
-        col1.updateMany(new Document(),new Document("$set",new Document("since_id",since_id)));
+        MongoCollection<Document> sinceIdCol = database.getCollection("since_id");
+        sinceIdCol.updateMany(new Document(),new Document("$set",new Document("since_id",since_id)));
     }
 
-    @Override
-    public long getSinceId() {
-        MongoCollection<Document> col1 = database.getCollection("since_id");
-        return col1.find().first().getLong("since_id");
-    }
 
     @Override
     public void insertFutureTweet(long tweetId, long inReplyToStatusId) {
-        MongoCollection<Document> col1 = database.getCollection("future_tweet");
+        MongoCollection<Document> futureTweetCol = database.getCollection("future_tweet");
         Document document = new Document("tweet_id", tweetId)
                 .append("inReplyToStatusId", inReplyToStatusId);
-        col1.insertOne(document);
+        futureTweetCol.insertOne(document);
     }
 
     @Override
     public void deleteFutureTweets() {
-        MongoCollection<Document> col1 = database.getCollection("future_tweet");
-        col1.deleteMany(new Document());
+        MongoCollection<Document> futureTweetCol = database.getCollection("future_tweet");
+        futureTweetCol.deleteMany(new Document());
     }
 
     @Override

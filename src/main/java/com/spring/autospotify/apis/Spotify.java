@@ -1,6 +1,8 @@
-package com.spring.autospotify;
+package com.spring.autospotify.apis;
 
 import com.neovisionaries.i18n.CountryCode;
+import com.spring.autospotify.config.GetPropertyValues;
+import com.spring.autospotify.database.Database;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
@@ -238,7 +240,6 @@ public class Spotify {
             // Execute request for creating playlist
             Playlist playlist = createPlaylistRequest.execute();
             System.out.println("Playlist succesfully created: " + playlist.getName());
-            System.out.println("Playlist id:" + playlist.getId());
             return playlist.getId();
         } catch (ParseException | IOException | SpotifyWebApiException e) {
             e.printStackTrace();

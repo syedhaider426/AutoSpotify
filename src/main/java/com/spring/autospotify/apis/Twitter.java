@@ -1,5 +1,7 @@
-package com.spring.autospotify;
+package com.spring.autospotify.apis;
 
+import com.spring.autospotify.config.GetPropertyValues;
+import com.spring.autospotify.database.Database;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
@@ -54,8 +56,12 @@ public class Twitter {
     public Map<Long, Long> getMentions(long since_id) {
         Map<Long, Long> tweets = new LinkedHashMap<>();
         try {
-            Paging sinceId = new Paging(since_id);
-            ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline(sinceId);
+            Paging page;
+            if (since_id == -1L)
+                page = new Paging(1, 20);
+            else
+                page = new Paging(since_id);
+            ResponseList<Status> responseList = twitter.timelines().getMentionsTimeline(page);
             long[] approvedUserIdList = {709746338376896513L, 348768375L, 729066981077311488L, 62786088L};
             boolean found = false;
             if (responseList.size() > 0) {
@@ -64,18 +70,18 @@ public class Twitter {
                     Long inReplyToUserId = stat.getInReplyToUserId();
                     System.out.println("Status Id: " + stat.getId());
                     for (Long approvedUserId : approvedUserIdList) {
-                        //if (approvedUserId.equals(inReplyToUserId)) {
-                        try {
-                            Status stats = twitter.showStatus(stat.getInReplyToStatusId());
-                            if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent
-                                tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
-                                found = true;
-                                break;
+                        if (approvedUserId.equals(inReplyToUserId)) {
+                            try {
+                                Status stats = twitter.showStatus(stat.getInReplyToStatusId());
+                                if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent
+                                    tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
+                                    found = true;
+                                    break;
+                                }
+                            } catch (TwitterException ex) {
+                                ex.printStackTrace();
                             }
-                        } catch (TwitterException ex) {
-                            ex.printStackTrace();
                         }
-                        //}
                     }
 
                 }

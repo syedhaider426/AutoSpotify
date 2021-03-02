@@ -1,8 +1,14 @@
-package com.spring.autospotify;
+package com.spring.autospotify.database;
 
 import java.util.Map;
 
 public interface Database {
+
+    void initialize();
+
+    /**
+     * Creates the artist table
+     */
     void createArtistTable();
 
     /**

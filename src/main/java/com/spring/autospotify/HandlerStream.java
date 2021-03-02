@@ -1,27 +1,52 @@
 package com.spring.autospotify;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.spring.autospotify.apis.Spotify;
 import com.spring.autospotify.apis.Twitter;
 import com.spring.autospotify.database.Database;
 import com.spring.autospotify.database.MongoDB;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * This application is intended to take a tweet where the autospotify426 bot
- * is mentioned and generate a Spotify playlist from the artists listed in the tweet,
- * getting the tracks released during the week of the tweet .
- */
-public class AutoSpotifyApplication {
+// Handler value: example.HandlerStream
+public class HandlerStream implements RequestStreamHandler {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static void main(String[] args) throws IOException {
+    @Override
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
+        LambdaLogger logger = context.getLogger();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("US-ASCII")));
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, Charset.forName("US-ASCII"))));
+        try {
+            HashMap event = gson.fromJson(reader, HashMap.class);
+            logger.log("STREAM TYPE: " + inputStream.getClass().toString());
+            logger.log("EVENT TYPE: " + event.getClass().toString());
+            writer.write(gson.toJson(event));
+            if (writer.checkError()) {
+                logger.log("WARNING: Writer encountered an error.");
+            }
+        } catch (IllegalStateException | JsonSyntaxException exception) {
+            logger.log(exception.toString());
+        } finally {
+            reader.close();
+            writer.close();
+        }
+    }
 
+    public void generatePlaylist(LambdaLogger logger) throws IOException {
         // Initialize the database
         Database db = new MongoDB();
 
@@ -54,7 +79,7 @@ public class AutoSpotifyApplication {
 
         // If bot was not mentioned in any tweets, return
         if (tweetIdList.size() == 0) {
-            System.out.println("No mentions found");
+            logger.log("No mentions found");
             return;
         }
 
@@ -75,7 +100,7 @@ public class AutoSpotifyApplication {
             DayOfWeek dayOfWeek = tweetStartDate.getDayOfWeek(); //starts at 0
             LocalDate tweetEndDate = tweetStartDate.plusDays(DayOfWeek.FRIDAY.getValue() - dayOfWeek.getValue());
             if (tweetEndDate.isAfter(LocalDate.now())) {
-                System.out.println("This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
+                logger.log("This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 db.insertFutureTweet(tweetId, inReplyToStatusId);
                 twitter.replyTweet(inReplyToStatusId, "This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 continue;
@@ -84,7 +109,7 @@ public class AutoSpotifyApplication {
             // If tweet exists, get track associated with it
             String playlistId = db.getPlaylistId(tweetId);
             if (playlistId.length() > 0) {
-                System.out.println("Found the playlist link");
+                logger.log("Found the playlist link");
                 twitter.replyTweet(inReplyToStatusId, "This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
                 continue;
             }
@@ -92,7 +117,7 @@ public class AutoSpotifyApplication {
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetId);
             if (artists.size() < 6) {
-                System.out.println("No artists found");
+                logger.log("No artists found");
                 twitter.replyTweet(inReplyToStatusId, "There needs to be at least 6 artists in the tweet for playlist to be created.");
                 continue;
             }
@@ -102,7 +127,7 @@ public class AutoSpotifyApplication {
 
             // ArrayList<String> artistIdList = new ArrayList<>();
             if (artistIdList.size() <= 0) {
-                System.out.println("No artists found");
+                logger.log("No artists found");
                 twitter.replyTweet(inReplyToStatusId, "None of the artists in tweet were found on Spotify");
                 continue;
             }
@@ -110,7 +135,7 @@ public class AutoSpotifyApplication {
             // Get the songs/albums/eps released for the week of the tweet
             ArrayList<String> albumReleases = spotify.getReleases(artistIdList, tweetDate);
             if (artistIdList.size() <= 0) {
-                System.out.println("No new releases found");
+                logger.log("No new releases found");
                 twitter.replyTweet(inReplyToStatusId, "None of the artists mentioned in the tweet has released music the week of this tweet.");
                 continue;
             }
@@ -118,7 +143,7 @@ public class AutoSpotifyApplication {
             // Get each track from album releases and that will be added to the playlist
             ArrayList<String> tracks = spotify.getAlbumTracks(albumReleases, artistIdList);
             if (artistIdList.size() <= 0) {
-                System.out.println("Tracks for the requested albums were not found");
+                logger.log("Tracks for the requested albums were not found");
                 twitter.replyTweet(inReplyToStatusId, "Spotify had an issue finding music for the artists listed.");
                 continue;
             }
@@ -131,9 +156,10 @@ public class AutoSpotifyApplication {
             String newPlaylistId = spotify.createPlaylist(userid, playlistName);
             if (newPlaylistId == null) {
                 twitter.replyTweet(inReplyToStatusId, "Issue creating playlist. Please try again later.");
+                db.insertFutureTweet(tweetId,inReplyToStatusId);    // Reprocess tweet at another time
                 continue;
             }
-            System.out.println("New playlist added: " + newPlaylistId);
+            logger.log("New playlist added: " + newPlaylistId);
 
             // Store playlist and the tweet they are related to
             db.insertPlaylist_Tweet(tweetId, newPlaylistId);
