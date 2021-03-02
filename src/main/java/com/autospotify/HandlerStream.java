@@ -34,6 +34,7 @@ public class HandlerStream implements RequestStreamHandler {
             HashMap event = gson.fromJson(reader, HashMap.class);
             logger.log("STREAM TYPE: " + inputStream.getClass().toString());
             logger.log("EVENT TYPE: " + event.getClass().toString());
+            generatePlaylist(logger);
             writer.write(gson.toJson(event));
             if (writer.checkError()) {
                 logger.log("WARNING: Writer encountered an error.");
@@ -62,9 +63,10 @@ public class HandlerStream implements RequestStreamHandler {
         // Create instance of Twitter
         Twitter twitter = new Twitter(db);
 
+        logger.log("Getting newest mentions....\n");
         // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
         Map<Long, Long> tweetIdList = twitter.getMentions(db.getSinceId());
-
+        logger.log("Found " + tweetIdList.size() + " tweet(s). Let's check if we have any previous tweets to process\n");
         Map<Long, Long> futureTweets = null;
         if (LocalDate.now().getDayOfWeek().getValue() == DayOfWeek.FRIDAY.getValue()) {
             futureTweets = db.getFutureTweets();
@@ -79,7 +81,7 @@ public class HandlerStream implements RequestStreamHandler {
 
         // If bot was not mentioned in any tweets, return
         if (tweetIdList.size() == 0) {
-            logger.log("No mentions found");
+            logger.log("No tweets found\n");
             return;
         }
 
@@ -100,7 +102,7 @@ public class HandlerStream implements RequestStreamHandler {
             DayOfWeek dayOfWeek = tweetStartDate.getDayOfWeek(); //starts at 0
             LocalDate tweetEndDate = tweetStartDate.plusDays(DayOfWeek.FRIDAY.getValue() - dayOfWeek.getValue());
             if (tweetEndDate.isAfter(LocalDate.now())) {
-                logger.log("This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
+                logger.log("This playlist will be generated around 12:30 AM EST on " + tweetEndDate + "\n");
                 db.insertFutureTweet(tweetId, inReplyToStatusId);
                 twitter.replyTweet(inReplyToStatusId, "This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 continue;
@@ -109,7 +111,7 @@ public class HandlerStream implements RequestStreamHandler {
             // If tweet exists, get track associated with it
             String playlistId = db.getPlaylistId(tweetId);
             if (playlistId.length() > 0) {
-                logger.log("Found the playlist link");
+                logger.log("Found the playlist link\n");
                 twitter.replyTweet(inReplyToStatusId, "This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
                 continue;
             }
@@ -117,7 +119,7 @@ public class HandlerStream implements RequestStreamHandler {
             // Gets tweet and parses it
             ArrayList<String> artists = twitter.getArtists(tweetId);
             if (artists.size() < 6) {
-                logger.log("No artists found");
+                logger.log("No artists found\n");
                 twitter.replyTweet(inReplyToStatusId, "There needs to be at least 6 artists in the tweet for playlist to be created.");
                 continue;
             }
@@ -127,7 +129,7 @@ public class HandlerStream implements RequestStreamHandler {
 
             // ArrayList<String> artistIdList = new ArrayList<>();
             if (artistIdList.size() <= 0) {
-                logger.log("No artists found");
+                logger.log("No artists found\n");
                 twitter.replyTweet(inReplyToStatusId, "None of the artists in tweet were found on Spotify");
                 continue;
             }
@@ -135,7 +137,7 @@ public class HandlerStream implements RequestStreamHandler {
             // Get the songs/albums/eps released for the week of the tweet
             ArrayList<String> albumReleases = spotify.getReleases(artistIdList, tweetDate);
             if (artistIdList.size() <= 0) {
-                logger.log("No new releases found");
+                logger.log("No new releases found\n");
                 twitter.replyTweet(inReplyToStatusId, "None of the artists mentioned in the tweet has released music the week of this tweet.");
                 continue;
             }
@@ -143,7 +145,7 @@ public class HandlerStream implements RequestStreamHandler {
             // Get each track from album releases and that will be added to the playlist
             ArrayList<String> tracks = spotify.getAlbumTracks(albumReleases, artistIdList);
             if (artistIdList.size() <= 0) {
-                logger.log("Tracks for the requested albums were not found");
+                logger.log("Tracks for the requested albums were not found\n");
                 twitter.replyTweet(inReplyToStatusId, "Spotify had an issue finding music for the artists listed.");
                 continue;
             }
@@ -159,7 +161,7 @@ public class HandlerStream implements RequestStreamHandler {
                 db.insertFutureTweet(tweetId,inReplyToStatusId);    // Reprocess tweet at another time
                 continue;
             }
-            logger.log("New playlist added: " + newPlaylistId);
+            logger.log("New playlist added: " + newPlaylistId + "\n");
 
             // Store playlist and the tweet they are related to
             db.insertPlaylist_Tweet(tweetId, newPlaylistId);
