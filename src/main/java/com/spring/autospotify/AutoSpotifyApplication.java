@@ -1,5 +1,6 @@
 package com.spring.autospotify;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,16 +15,15 @@ import java.util.Map;
  */
 public class AutoSpotifyApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // Initialize the database
-        PostgresDB db = new PostgresDB();
+        Database db = new MongoDB();
         // Only needs to run when program is first run
 //        db.createArtistTable();
 //        db.createPlaylistTweetTable();
 //        db.createSinceIdTable();
 //        db.createFutureTweetTable();
-
 
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
@@ -38,6 +38,7 @@ public class AutoSpotifyApplication {
 
         // Get the most recent mentions of bot offset by the since_id (newest id of the getMentionsTimeline endpoint)
         long since_id = db.getSinceId();
+        System.out.println("Latest id: " +  since_id);
         Map<Long, Long> tweetIdList = twitter.getMentions(since_id);
 
         // If there are any tweets stored in future_tweet that can be processed, add to list
@@ -71,15 +72,11 @@ public class AutoSpotifyApplication {
              */
             LocalDate tweetStartDate = tweetDate.toLocalDate();
             DayOfWeek dayOfWeek = tweetStartDate.getDayOfWeek(); //starts at 0
-            int fridayValue = DayOfWeek.FRIDAY.getValue();
-            int tweetDateValue = dayOfWeek.getValue();
-            LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
-            System.out.println(tweetEndDate);
-            System.out.println(LocalDate.now());
-            if (tweetEndDate.isBefore(LocalDate.now())) {
+            LocalDate tweetEndDate = tweetStartDate.plusDays(DayOfWeek.FRIDAY.getValue() - dayOfWeek.getValue());
+            if (tweetEndDate.isAfter(LocalDate.now())) {
                 System.out.println("This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 db.insertFutureTweet(tweetId, inReplyToStatusId);
-                //twitter.replyTweet(inReplyToStatusId, "This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
+                twitter.replyTweet(inReplyToStatusId, "This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 continue;
             }
 
@@ -118,7 +115,7 @@ public class AutoSpotifyApplication {
             }
 
             // Get each track from album releases and that will be added to the playlist
-            ArrayList<String> tracks = spotify.getAlbumTracks(albumReleases);
+            ArrayList<String> tracks = spotify.getAlbumTracks(albumReleases, artistIdList);
             if (artistIdList.size() <= 0) {
                 System.out.println("Tracks for the requested albums were not found");
                 twitter.replyTweet(inReplyToStatusId, "Spotify had an issue finding music for the artists listed.");

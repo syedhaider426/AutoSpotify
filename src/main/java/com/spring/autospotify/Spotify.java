@@ -29,14 +29,14 @@ import java.util.*;
  */
 public class Spotify {
     private SpotifyApi spotifyApi;
-    private PostgresDB db;
+    private Database db;
 
     /**
      * Constructor for Spotify object
      *
      * @param db JDBC Postgresql db to call any database methods
      */
-    public Spotify(PostgresDB db) {
+    public Spotify(Database db) {
         Properties prop;
         try {
             // Get secret properties
@@ -65,6 +65,7 @@ public class Spotify {
         for (String artist : artistList) {
             // Checks the database for the artist to see if artist and corresponding spotify id exists
             spotifyId = db.getSpotifyID(artist);
+
             if (spotifyId.length() > 0) {
                 artists.add(spotifyId);
                 continue;
@@ -128,7 +129,6 @@ public class Spotify {
         for (int x = 0; x < artistIdList.size(); x++) {
             boolean found = false;
             this.spotifyApi = setToken();
-            System.out.println("Checking artist: " + artistIdList.get(x));
             // Build request to get albums for artist
             // Counter will either be 0 or 50 depending on if songs were found in first loop
             GetArtistsAlbumsRequest getArtistsAlbumsRequest = spotifyApi.getArtistsAlbums(artistIdList.get(x))
@@ -160,7 +160,6 @@ public class Spotify {
                 }
                 // If song was found, go to next artist
                 if (found) {
-                    System.out.println("Found song");
                     continue;
                 }
                 // If song was not found in the first 50 songs, check the next 50 songs
@@ -188,7 +187,7 @@ public class Spotify {
      * @param albumReleases list of spotifyuris of type: album, single, ep, appears_on
      * @return list of tracks for each album to be added to playlist
      */
-    public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases) {
+    public ArrayList<String> getAlbumTracks(ArrayList<String> albumReleases, List<String> artistIdList) {
         System.out.println("Loading tracks");
         ArrayList<String> releases = new ArrayList<>();
         Map<String, String> releasesMap = new HashMap<>();
@@ -202,7 +201,12 @@ public class Spotify {
                 TrackSimplified[] items = trackSimplifiedPaging.getItems();
                 // Put name of track and corresponding uri into map
                 for (TrackSimplified item : items) {
-                    releasesMap.put(item.getName(), item.getUri());
+                    for(ArtistSimplified artist: item.getArtists()){
+                        if(artistIdList.contains(artist.getId())){
+                            releasesMap.put(item.getName(), item.getUri());
+                            break;
+                        }
+                    }
                 }
             }
             // Duplicates removed
@@ -272,7 +276,7 @@ public class Spotify {
                 System.out.println("Snapshot ID: " + snapshotResult.getSnapshotId());
                 x += 90;
             }
-            twitter.replyTweet(inReplyToStatusId, "Poggers. This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
+            twitter.replyTweet(inReplyToStatusId, "This tweet was automated. Playlist is here at https://open.spotify.com/playlist/" + playlistId);
         } catch (SpotifyWebApiException | ParseException | IOException e) {
             e.printStackTrace();
             twitter.replyTweet(inReplyToStatusId, "Unable to add songs to playlist. Please try again later.");

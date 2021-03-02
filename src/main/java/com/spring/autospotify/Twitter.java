@@ -14,12 +14,12 @@ import java.util.*;
  */
 public class Twitter {
     private static twitter4j.Twitter twitter;
-    private static PostgresDB db;
+    private static Database db;
 
     /**
      * Constructor for Twitter object
      */
-    public Twitter(PostgresDB db) {
+    public Twitter(Database db) {
         try {
             GetPropertyValues properties = new GetPropertyValues();
             Properties prop = properties.getPropValues();

@@ -11,31 +11,21 @@ import java.util.Properties;
  * and storing the newest id of the getMentionsTimeline endpoint (to prevent processing old
  * tweets)
  */
-public class PostgresDB {
+public class PostgresDB implements Database {
     private static String url;
     private static String driver;
 
-    /**
-     * Constructor for JDBCUtil
-     * -Set the connection url and postgresql driver
-     */
     public PostgresDB() {
         try {
             GetPropertyValues properties = new GetPropertyValues();
             Properties prop = properties.getPropValues();
-            url = "jdbc:postgresql://localhost:5432/postgres";
-            //this.url = "jdbc:postgresql://" + prop.getProperty("url");
+            url = "jdbc:postgresql://" + prop.getProperty("url");
             driver = "org.postgresql.Driver";
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    /**
-     * Opens connection to db
-     *
-     * @return Connection - connection to the database
-     */
     public static Connection getConnection() {
         Connection conn = null;
         Properties prop;
@@ -50,9 +40,6 @@ public class PostgresDB {
         return conn;
     }
 
-    /**
-     * Creates the Artist Table
-     */
     public void createArtistTable() {
         String sql = "CREATE TABLE IF NOT EXISTS ARTIST" +
                 "(" +
@@ -71,12 +58,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Insert artist name and their corresponding spotifyid
-     *
-     * @param artist    Name of Artist
-     * @param spotifyID ID associated with artist in Spotify
-     */
     public void insertArtist(String artist, String spotifyID) {
         String sql = "INSERT INTO ARTIST (Artist,SpotifyID) VALUES (?,?) ON CONFLICT ON CONSTRAINT artist_pkey " +
                 "DO NOTHING";
@@ -93,12 +74,6 @@ public class PostgresDB {
 
     }
 
-    /**
-     * Gets the spotifyid of an artist
-     *
-     * @param artist Name of artist
-     * @return spotifyid associated with artist if artist exists
-     */
     public String getSpotifyID(String artist) {
         String sql = "SELECT SpotifyID FROM ARTIST Where UPPER(ARTIST) = ?";
         try (
@@ -119,9 +94,6 @@ public class PostgresDB {
         return null;
     }
 
-    /**
-     * Creates the PLAYLIST_TWEET Table
-     */
     public void createPlaylistTweetTable() {
         String sql = "CREATE TABLE IF NOT EXISTS PLAYLIST_TWEET (" +
                 "TweetId BIGINT," +
@@ -137,13 +109,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Stores the tweet id and playlistid to keep track of in case
-     * other users request bot on same tweet
-     *
-     * @param tweet      id of tweet that was processed
-     * @param playlistId playlistId that was created via Spotify Api
-     */
     public void insertPlaylist_Tweet(Long tweet, String playlistId) {
         String sql = "INSERT INTO PLAYLIST_TWEET (TweetId,PlaylistId) VALUES (?,?)";
         try (
@@ -159,13 +124,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Checks to see if the tweetId passed in exists in playlist_tweet table. If
-     * it does, return it.
-     *
-     * @param tweetId id of the tweet that may or may not exist in playlist_tweet
-     * @return playlistid if tweet exists, return the playlistid
-     */
     public String getPlaylistId(Long tweetId) {
         String sql = "SELECT PlaylistId FROM PLAYLIST_TWEET WHERE TweetId = ?";
         try (
@@ -184,9 +142,6 @@ public class PostgresDB {
         return "";
     }
 
-    /**
-     * Creates the since_id table
-     */
     public void createSinceIdTable() {
         String sql = "CREATE TABLE IF NOT EXISTS SINCE_ID (" +
                 "since_id BIGINT NOT NULL, " +
@@ -203,11 +158,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Insert the id of the newest tweet from getMentionsTimeline endpoint into table. This only occurs once.
-     *
-     * @param since_id id of the newest tweet from getMentionsTimeline endpoint
-     */
     public void insertSinceId(long since_id) {
         String sql = "INSERT INTO SINCE_ID (since_id) VALUES (?)";
         try (
@@ -221,11 +171,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Update the since_id
-     *
-     * @param since_id id of the newest tweet from getMentionsTimeline endpoint
-     */
     public void updateSinceId(long since_id) {
         String sql = "UPDATE SINCE_ID SET since_id = ?";
         try (
@@ -239,12 +184,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Get the since_id
-     *
-     * @return since_id which is used to get the tweets greater than the since_id
-     * (since_id is updated to the highest id from the getMentionsTimeline endpoint)
-     */
     public long getSinceId() {
         String sql = "SELECT since_id FROM SINCE_ID";
         try (
@@ -262,10 +201,6 @@ public class PostgresDB {
         return 1L;
     }
 
-
-    /**
-     * Creates the future_tweet table
-     */
     public void createFutureTweetTable() {
         String sql = "CREATE TABLE IF NOT EXISTS FUTURE_TWEET (" +
                 "tweet_id BIGINT NOT NULL," +
@@ -283,12 +218,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Insert the id of the tweet from getMentionsTimeline endpoint into table.
-     *
-     * @param tweetId           id of the tweet from getMentionsTimeline endpoint that needs to be processed on a Friday
-     * @param inReplyToStatusId id of the tweet from getMentionsTimeline endpoint that needs to be responded to
-     */
     public void insertFutureTweet(long tweetId, long inReplyToStatusId) {
         String sql = "INSERT INTO FUTURE_TWEET (tweet_id, inReplyToStatusId) VALUES (?,?)";
         try (
@@ -303,9 +232,6 @@ public class PostgresDB {
         }
     }
 
-    /**
-     * Delete all tweets in table
-     */
     public void deleteFutureTweets() {
         String sql = "DELETE FROM FUTURE_TWEET";
         try (
@@ -318,12 +244,6 @@ public class PostgresDB {
         }
     }
 
-
-    /**
-     * Gets the tweets that need to be processed on Friday
-     *
-     * @return map of future tweets to be processed
-     */
     public Map<Long, Long> getFutureTweets() {
         Map<Long, Long> tweets = new LinkedHashMap<>();
         String sql = "SELECT tweet_id, inReplyToStatusId FROM FUTURE_TWEET";
