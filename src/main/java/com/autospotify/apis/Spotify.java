@@ -166,13 +166,13 @@ public class Spotify {
                 }
                 // If song was not found in the first 50 songs, check the next 50 songs
                 else if (!found && counter == 0 || (!found && counter == 50 && x == artistIdList.size() - 1)) {
-                    System.out.println("No song found. Checking next 50");
+                    //System.out.println("No song found. Checking next 50");
                     x--;    //check the same artist
                     counter += 50;
                 }
                 // If song was not found within the first 100 songs read, then check the next artist
                 else if (!found && counter == 50 && x != artistIdList.size() - 1) {
-                    System.out.println("No song found. Going to next artist");
+                    //System.out.println("No song found. Going to next artist");
                     counter = 0;
                 }
             } catch (IOException | SpotifyWebApiException | ParseException | DateTimeParseException e) {
