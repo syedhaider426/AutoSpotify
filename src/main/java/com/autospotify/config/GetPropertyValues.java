@@ -1,4 +1,4 @@
-package com.spring.autospotify.config;
+package com.autospotify.config;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

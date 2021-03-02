@@ -1,7 +1,7 @@
-package com.spring.autospotify.apis;
+package com.autospotify.apis;
 
-import com.spring.autospotify.config.GetPropertyValues;
-import com.spring.autospotify.database.Database;
+import com.autospotify.config.GetPropertyValues;
+import com.autospotify.database.Database;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 

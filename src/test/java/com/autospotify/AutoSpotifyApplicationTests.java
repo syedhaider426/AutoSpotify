@@ -1,4 +1,4 @@
-package com.spring.autospotify;
+package com.autospotify;
 
 
 

@@ -1,8 +1,8 @@
-package com.spring.autospotify.apis;
+package com.autospotify.apis;
 
+import com.autospotify.config.GetPropertyValues;
+import com.autospotify.database.Database;
 import com.neovisionaries.i18n.CountryCode;
-import com.spring.autospotify.config.GetPropertyValues;
-import com.spring.autospotify.database.Database;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;

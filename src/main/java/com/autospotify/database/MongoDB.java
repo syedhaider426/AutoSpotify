@@ -1,8 +1,8 @@
-package com.spring.autospotify.database;
+package com.autospotify.database;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.*;
 import com.mongodb.MongoClientSettings;
-import com.spring.autospotify.config.GetPropertyValues;
+import com.autospotify.config.GetPropertyValues;
 import org.bson.Document;
 
 import java.io.IOException;

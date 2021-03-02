@@ -1,9 +1,9 @@
-package com.spring.autospotify;
+package com.autospotify;
 
-import com.spring.autospotify.apis.Spotify;
-import com.spring.autospotify.apis.Twitter;
-import com.spring.autospotify.database.Database;
-import com.spring.autospotify.database.MongoDB;
+import com.autospotify.apis.Spotify;
+import com.autospotify.apis.Twitter;
+import com.autospotify.database.Database;
+import com.autospotify.database.MongoDB;
 
 import java.io.IOException;
 import java.time.DayOfWeek;

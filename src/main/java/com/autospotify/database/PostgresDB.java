@@ -1,6 +1,6 @@
-package com.spring.autospotify.database;
+package com.autospotify.database;
 
-import com.spring.autospotify.config.GetPropertyValues;
+import com.autospotify.config.GetPropertyValues;
 
 import java.io.IOException;
 import java.sql.*;

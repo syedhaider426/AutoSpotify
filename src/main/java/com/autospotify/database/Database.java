@@ -1,4 +1,4 @@
-package com.spring.autospotify.database;
+package com.autospotify.database;
 
 import java.util.Map;
 

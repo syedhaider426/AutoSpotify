@@ -1,15 +1,15 @@
-package com.spring.autospotify;
+package com.autospotify;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.autospotify.apis.Spotify;
+import com.autospotify.apis.Twitter;
+import com.autospotify.database.Database;
+import com.autospotify.database.MongoDB;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.spring.autospotify.apis.Spotify;
-import com.spring.autospotify.apis.Twitter;
-import com.spring.autospotify.database.Database;
-import com.spring.autospotify.database.MongoDB;
 
 import java.io.*;
 import java.nio.charset.Charset;
