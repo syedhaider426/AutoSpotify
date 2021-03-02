@@ -14,12 +14,12 @@ import java.util.*;
  */
 public class Twitter {
     private static twitter4j.Twitter twitter;
-    private static JDBCUtil db;
+    private static PostgresDB db;
 
     /**
      * Constructor for Twitter object
      */
-    public Twitter(JDBCUtil db) {
+    public Twitter(PostgresDB db) {
         try {
             GetPropertyValues properties = new GetPropertyValues();
             Properties prop = properties.getPropValues();
@@ -64,21 +64,20 @@ public class Twitter {
                     Long inReplyToUserId = stat.getInReplyToUserId();
                     System.out.println("Status Id: " + stat.getId());
                     for (Long approvedUserId : approvedUserIdList) {
-                        if (approvedUserId.equals(inReplyToUserId)) {
-                            try {
-                                Status stats = twitter.showStatus(stat.getInReplyToStatusId());
-                                if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent
-                                    tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
-                                    found = true;
-                                    break;
-                                }
-                            } catch (TwitterException ex) {
-                                ex.printStackTrace();
+                        //if (approvedUserId.equals(inReplyToUserId)) {
+                        try {
+                            Status stats = twitter.showStatus(stat.getInReplyToStatusId());
+                            if (stats.getInReplyToUserId() == -1L) {    //indicates the top-most, parent
+                                tweets.put(stats.getId(), stat.getId());    //Tweet with artists, tweet that called bot
+                                found = true;
+                                break;
                             }
+                        } catch (TwitterException ex) {
+                            ex.printStackTrace();
                         }
+                        //}
                     }
-                    if (!found)
-                        replyTweet(stat.getId(), "Please reference the accounts that the bot can be used with in my bio.");
+
                 }
             }
             return tweets;
@@ -154,6 +153,21 @@ public class Twitter {
                 }
             } else if (artist.contains("FT.")) {
                 tempArtists = artist.split("FT.");
+                for (String tempArtist : tempArtists) {
+                    artistList.add(tempArtist.trim());
+                }
+            } else if (artist.contains("&")) {
+                tempArtists = artist.split("&");
+                for (String tempArtist : tempArtists) {
+                    artistList.add(tempArtist.trim());
+                }
+            } else if (artist.contains(" EP")) {
+                tempArtists = artist.split("EP");
+                for (String tempArtist : tempArtists) {
+                    artistList.add(tempArtist.trim());
+                }
+            } else if (artist.contains(" LP")) {
+                tempArtists = artist.split("LP");
                 for (String tempArtist : tempArtists) {
                     artistList.add(tempArtist.trim());
                 }

@@ -29,14 +29,14 @@ import java.util.*;
  */
 public class Spotify {
     private SpotifyApi spotifyApi;
-    private JDBCUtil db;
+    private PostgresDB db;
 
     /**
      * Constructor for Spotify object
      *
      * @param db JDBC Postgresql db to call any database methods
      */
-    public Spotify(JDBCUtil db) {
+    public Spotify(PostgresDB db) {
         Properties prop;
         try {
             // Get secret properties

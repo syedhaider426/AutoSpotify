@@ -17,13 +17,14 @@ public class AutoSpotifyApplication {
     public static void main(String[] args) {
 
         // Initialize the database
-        JDBCUtil db = new JDBCUtil();
-
+        PostgresDB db = new PostgresDB();
         // Only needs to run when program is first run
 //        db.createArtistTable();
 //        db.createPlaylistTweetTable();
 //        db.createSinceIdTable();
 //        db.createFutureTweetTable();
+
+
         // Create instance of Spotify
         Spotify spotify = new Spotify(db);
 
@@ -73,10 +74,12 @@ public class AutoSpotifyApplication {
             int fridayValue = DayOfWeek.FRIDAY.getValue();
             int tweetDateValue = dayOfWeek.getValue();
             LocalDate tweetEndDate = tweetStartDate.plusDays(fridayValue - tweetDateValue);
-            if (tweetEndDate.isAfter(LocalDate.now())) {
-                System.out.println("This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
+            System.out.println(tweetEndDate);
+            System.out.println(LocalDate.now());
+            if (tweetEndDate.isBefore(LocalDate.now())) {
+                System.out.println("This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 db.insertFutureTweet(tweetId, inReplyToStatusId);
-                twitter.replyTweet(inReplyToStatusId, "This playlist will be generated at 12:15 AM EST on " + tweetEndDate);
+                //twitter.replyTweet(inReplyToStatusId, "This playlist will be generated around 12:30 AM EST on " + tweetEndDate);
                 continue;
             }
 

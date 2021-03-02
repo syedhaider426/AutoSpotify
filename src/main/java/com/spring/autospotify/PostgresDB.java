@@ -11,7 +11,7 @@ import java.util.Properties;
  * and storing the newest id of the getMentionsTimeline endpoint (to prevent processing old
  * tweets)
  */
-public class JDBCUtil {
+public class PostgresDB {
     private static String url;
     private static String driver;
 
@@ -19,7 +19,7 @@ public class JDBCUtil {
      * Constructor for JDBCUtil
      * -Set the connection url and postgresql driver
      */
-    public JDBCUtil() {
+    public PostgresDB() {
         try {
             GetPropertyValues properties = new GetPropertyValues();
             Properties prop = properties.getPropValues();
@@ -268,7 +268,8 @@ public class JDBCUtil {
      */
     public void createFutureTweetTable() {
         String sql = "CREATE TABLE IF NOT EXISTS FUTURE_TWEET (" +
-                "tweet_id BIGINT NOT NULL, " +
+                "tweet_id BIGINT NOT NULL," +
+                "inReplyToStatusId BIGINT NOT NULL," +
                 "PRIMARY KEY (tweet_id) " +
                 ")";
         try (
@@ -289,7 +290,7 @@ public class JDBCUtil {
      * @param inReplyToStatusId id of the tweet from getMentionsTimeline endpoint that needs to be responded to
      */
     public void insertFutureTweet(long tweetId, long inReplyToStatusId) {
-        String sql = "INSERT INTO FUTURE_TWEET (tweet_id, inReplyToStatusId) VALUES (?)";
+        String sql = "INSERT INTO FUTURE_TWEET (tweet_id, inReplyToStatusId) VALUES (?,?)";
         try (
                 Connection db = getConnection();
                 PreparedStatement ps = db.prepareStatement(sql)
@@ -325,7 +326,7 @@ public class JDBCUtil {
      */
     public Map<Long, Long> getFutureTweets() {
         Map<Long, Long> tweets = new LinkedHashMap<>();
-        String sql = "SELECT tweet_id FROM FUTURE_TWEET";
+        String sql = "SELECT tweet_id, inReplyToStatusId FROM FUTURE_TWEET";
         try (
                 Connection db = getConnection();
                 PreparedStatement ps = db.prepareStatement(sql)
