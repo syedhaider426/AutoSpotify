@@ -20,7 +20,7 @@ Autospotify is a Twitter bot (https://twitter.com/autospotify426) that converts 
       <li>accessTokenSecret: Access token secret that is necessary to make secure calls to Twitter's API Services</li>
     </ul>
 
-    **Database**
+    **Database - User can choose to use a Postgres or MongoDB database**
     <ul>
       <li>username: Username for PostgreSQL database</li>
       <li>password: Password for PostgreSQL database</li>
