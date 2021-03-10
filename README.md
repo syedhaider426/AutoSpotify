@@ -30,7 +30,7 @@ Autospotify is a Twitter bot (https://twitter.com/autospotify426) that converts 
 
 3) After all the configuration properties have been set, application can now be run.
     <ul>
-      <li>The main class is AutoSpotifyApplication. This is what Java will run in the local environment.</li>
+      <li>The main class is AutoSpotifyApplication. This is what Java will run in the local environment. This is useful for testing the application works properly locally.</li>
       <li>The class that is run by AWS Lambda is HandlerStream. If one decides to deploy the application on AWS Lambda, additional instruction can be found at https://docs.aws.amazon.com/toolkit-for-eclipse/v1/user-guide/lambda-tutorial.html</li>
   </ul>
   
