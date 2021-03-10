@@ -9,7 +9,7 @@ Autospotify is a Twitter bot (https://twitter.com/autospotify426) that converts 
     <ul>
       <li>spotifyClientId: Unique identifier for Spotify Application</li>
       <li>spotifyClientSecret: Key that is passed in secure calls to the Spotify Accounts and Web API services</li>
-      <li>refreshToken: Token for account that</li>
+      <li>refreshToken: Token for account that will store the playlists</li>
     </ul>
 
     **Twitter API**
